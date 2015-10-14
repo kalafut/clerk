@@ -1,0 +1,11 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "gopkg.in/tylerb/is.v1",
+			"repository": "https://gopkg.in/tylerb/is.v1",
+			"revision": "af644dc42f32c63c38f7c54d1f637e2e473cdcc9",
+			"branch": "master"
+		}
+	]
+}
