@@ -16,9 +16,23 @@ import (
 
 //"Account","Flag","Check Number","Date","Payee","Category","Master Category","Sub Category","Memo","Outflow","Inflow","Cleared","Running Balance"
 
+// Blocks are a literal encapsulation of a ledger transaction. They
+// are not called transcactions because the actual ledger file strings
+// and comments are preserves. A ledger file is a sequence of blocks.
+//
+// Textually, a block is defined as:
+//    <0+ comment lines>
+//    <0 or 1 summary line: a) left justified  b) starting with a yyyy/mm/dd date>
+//    <0+ acccount lines or comments: a) indented at least one space>
+//
+// Whitespace between blocks is ignored.
 type Block struct {
 	lines []string
 	date  time.Time
+}
+
+func (b *Block) Empty() bool {
+	return len(b.lines) == 0
 }
 
 var blocks []Block
@@ -33,6 +47,23 @@ func main() {
 	flag.Parse()
 	filename := flag.Arg(0)
 
+	blocks = parseFile(filename)
+
+	//sort.Sort(sort.Reverse(ByDate(blocks)))
+	sort.Sort(ByDate(blocks))
+
+	for _, b := range blocks {
+		for _, l := range b.lines {
+			fmt.Println(l)
+		}
+		fmt.Println("")
+	}
+}
+
+// parseFile read a legder-formatted text file and returns a slice of blocks
+func parseFile(filename string) []Block {
+	var blocks []Block
+
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -45,32 +76,29 @@ func main() {
 		line := scanner.Text()
 
 		if len(strings.TrimSpace(line)) == 0 {
-			if len(block.lines) > 0 {
+			if !block.Empty() {
 				blocks = append(blocks, block)
 				block = Block{}
 			}
 		} else {
 			t, err := time.Parse("2006/01/02", line[0:10])
 			if err == nil {
+				// Start a new block
+				if !block.Empty() {
+					blocks = append(blocks, block)
+					block = Block{}
+				}
 				block.date = t
 			}
 			block.lines = append(block.lines, line)
 		}
 	}
 
-	if len(block.lines) > 0 {
+	if !block.Empty() {
 		blocks = append(blocks, block)
 	}
 
-	sort.Sort(sort.Reverse(ByDate(blocks)))
-
-	for _, b := range blocks {
-		for _, l := range b.lines {
-			fmt.Println(l)
-		}
-		fmt.Println("")
-	}
-
+	return blocks
 }
 
 func readCSV(filename string) [][]string {
