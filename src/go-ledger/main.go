@@ -1,29 +1,76 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
+	"time"
 )
 
 //type ynabRow struct {
 
 //"Account","Flag","Check Number","Date","Payee","Category","Master Category","Sub Category","Memo","Outflow","Inflow","Cleared","Running Balance"
 
+type Block struct {
+	lines []string
+	date  time.Time
+}
+
+var blocks []Block
+
+type ByDate []Block
+
+func (a ByDate) Len() int           { return len(a) }
+func (a ByDate) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByDate) Less(i, j int) bool { return a[i].date.Before(a[j].date) }
+
 func main() {
 	flag.Parse()
 	filename := flag.Arg(0)
-	rows := readCSV(filename)
 
-	for _, row := range rows {
-		conv := ynabRowConv(row)
-		for _, r := range conv {
-			fmt.Println(r)
+	f, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scanner := bufio.NewScanner(f)
+
+	block := Block{}
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if len(strings.TrimSpace(line)) == 0 {
+			if len(block.lines) > 0 {
+				blocks = append(blocks, block)
+				block = Block{}
+			}
+		} else {
+			t, err := time.Parse("2006/01/02", line[0:10])
+			if err == nil {
+				block.date = t
+			}
+			block.lines = append(block.lines, line)
 		}
 	}
+
+	if len(block.lines) > 0 {
+		blocks = append(blocks, block)
+	}
+
+	sort.Sort(sort.Reverse(ByDate(blocks)))
+
+	for _, b := range blocks {
+		for _, l := range b.lines {
+			fmt.Println(l)
+		}
+		fmt.Println("")
+	}
+
 }
 
 func readCSV(filename string) [][]string {
