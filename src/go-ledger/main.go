@@ -5,8 +5,10 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -26,6 +28,10 @@ import (
 //    <0+ acccount lines or comments: a) indented at least one space>
 //
 // Whitespace between blocks is ignored.
+
+// Note: value will not have '-', intentionally
+var acctAmtRegex = regexp.MustCompile(`^\s+(.*?\S)(?:\s{2,}.*?([\d,\.]+))?\s*$`)
+
 type Block struct {
 	lines []string
 	date  time.Time
@@ -47,7 +53,11 @@ func main() {
 	flag.Parse()
 	filename := flag.Arg(0)
 
-	blocks = parseFile(filename)
+	f, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	blocks = parse(f)
 
 	//sort.Sort(sort.Reverse(ByDate(blocks)))
 	sort.Sort(ByDate(blocks))
@@ -61,15 +71,10 @@ func main() {
 }
 
 // parseFile read a legder-formatted text file and returns a slice of blocks
-func parseFile(filename string) []Block {
+func parse(data io.Reader) []Block {
 	var blocks []Block
 
-	f, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(data)
 
 	block := Block{}
 	for scanner.Scan() {
