@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -18,36 +17,8 @@ import (
 
 //"Account","Flag","Check Number","Date","Payee","Category","Master Category","Sub Category","Memo","Outflow","Inflow","Cleared","Running Balance"
 
-// Blocks are a literal encapsulation of a ledger transaction. They
-// are not called transcactions because the actual ledger file strings
-// and comments are preserves. A ledger file is a sequence of blocks.
-//
-// Textually, a block is defined as:
-//    <0+ comment lines>
-//    <0 or 1 summary line: a) left justified  b) starting with a yyyy/mm/dd date>
-//    <0+ acccount lines or comments: a) indented at least one space>
-//
-// Whitespace between blocks is ignored.
-
-// Note: value will not have '-', intentionally
-var acctAmtRegex = regexp.MustCompile(`^\s+(.*?\S)(?:\s{2,}.*?([\d,\.]+))?\s*$`)
-
-type Block struct {
-	lines []string
-	date  time.Time
-}
-
-func (b *Block) Empty() bool {
-	return len(b.lines) == 0
-}
-
 var blocks []Block
-
-type ByDate []Block
-
-func (a ByDate) Len() int           { return len(a) }
-func (a ByDate) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByDate) Less(i, j int) bool { return a[i].date.Before(a[j].date) }
+var blocksByDate = map[time.Time][]*Block{}
 
 func main() {
 	flag.Parse()
@@ -62,12 +33,13 @@ func main() {
 	//sort.Sort(sort.Reverse(ByDate(blocks)))
 	sort.Sort(ByDate(blocks))
 
-	for _, b := range blocks {
-		for _, l := range b.lines {
-			fmt.Println(l)
-		}
-		fmt.Println("")
-	}
+	//for _, b := range blocks {
+	//	for _, l := range b.lines {
+	//		fmt.Println(l)
+	//	}
+	//	fmt.Println("")
+	//}
+	findDupes(blocks)
 }
 
 // parseFile read a legder-formatted text file and returns a slice of blocks
@@ -83,6 +55,7 @@ func parse(data io.Reader) []Block {
 		if len(strings.TrimSpace(line)) == 0 {
 			if !block.Empty() {
 				blocks = append(blocks, block)
+				blocksByDate[block.date] = append(blocksByDate[block.date], &block)
 				block = Block{}
 			}
 		} else {
@@ -91,6 +64,7 @@ func parse(data io.Reader) []Block {
 				// Start a new block
 				if !block.Empty() {
 					blocks = append(blocks, block)
+					blocksByDate[block.date] = append(blocksByDate[block.date], &block)
 					block = Block{}
 				}
 				block.date = t
@@ -101,9 +75,23 @@ func parse(data io.Reader) []Block {
 
 	if !block.Empty() {
 		blocks = append(blocks, block)
+		blocksByDate[block.date] = append(blocksByDate[block.date], &block)
 	}
 
 	return blocks
+}
+
+// findDupes returns a list of likely duplicate blocks. Duplicates
+// are block with the same date and transaction structure. The same
+// accounts and amounts must be present in both for it to be dupe.
+func findDupes(blocks []Block) {
+	for i := range blocks {
+		for j := i + 1; j < len(blocks); j++ {
+			if blocks[i].IsDupe(blocks[j], 0) {
+				fmt.Printf("%v,%v:%v\n", i, j, blocks[i].lines[0])
+			}
+		}
+	}
 }
 
 func readCSV(filename string) [][]string {
