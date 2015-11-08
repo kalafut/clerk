@@ -2,14 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/csv"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"sort"
 	"strings"
-	"time"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -18,77 +16,60 @@ import (
 
 //"Account","Flag","Check Number","Date","Payee","Category","Master Category","Sub Category","Memo","Outflow","Inflow","Cleared","Running Balance"
 
-var blocks []Block
-var blocksByDate = map[time.Time][]*Block{}
-
 var (
-	app      = kingpin.New("clerk", "Ledger Helper")
-	filename = app.Flag("filename", "Ledger filename").Short('f').Default("master.dat").String()
-	inPlace  = app.Flag("inplace", "Edit file in place").Short('i').Bool()
-	sortCmd  = app.Command("sort", "Sort the ledger by date.")
+	app       = kingpin.New("clerk", "Ledger Helper")
+	filename  = app.Flag("filename", "Ledger filename").Short('f').Default("master.dat").String()
+	inplace   = app.Flag("inplace", "Edit file in place").Short('i').Bool()
+	outfile   = app.Flag("outfile", "Output file").Short('o').String()
+	sortCmd   = app.Command("sort", "Sort the ledger by date.")
+	dedupeCmd = app.Command("dedupe", "Deduplicate the ledger.")
 )
 
 func main() {
-	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
-	case sortCmd.FullCommand():
-		println("SORT")
-	}
+	var f *os.File
+	var output *bufio.Writer
+	var tempBuffer bytes.Buffer
 
+	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 	f, err := os.Open(*filename)
 	if err != nil {
 		log.Fatal(err)
 	}
-	blocks = parse(f)
+	ledger := NewLedger(f)
+	f.Close()
 
-	//sort.Sort(sort.Reverse(ByDate(blocks)))
-	sort.Sort(ByDate(blocks))
-
-	//for _, b := range blocks {
-	//	for _, l := range b.lines {
-	//		fmt.Println(l)
-	//	}
-	//	fmt.Println("")
-	//}
-	findDupes(blocks)
-}
-
-// parseFile read a legder-formatted text file and returns a slice of blocks
-func parse(data io.Reader) []Block {
-	var blocks []Block
-
-	scanner := bufio.NewScanner(data)
-
-	block := Block{}
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if len(strings.TrimSpace(line)) == 0 {
-			if !block.Empty() {
-				blocks = append(blocks, block)
-				blocksByDate[block.date] = append(blocksByDate[block.date], &block)
-				block = Block{}
-			}
-		} else {
-			t, err := time.Parse("2006/01/02", line[0:10])
-			if err == nil {
-				// Start a new block
-				if !block.Empty() {
-					blocks = append(blocks, block)
-					blocksByDate[block.date] = append(blocksByDate[block.date], &block)
-					block = Block{}
-				}
-				block.date = t
-			}
-			block.lines = append(block.lines, line)
+	if *inplace {
+		output = bufio.NewWriter(&tempBuffer)
+	} else if *outfile != "" {
+		f, err = os.Create(*outfile)
+		defer f.Close()
+		if err != nil {
+			log.Fatal(err)
 		}
+		output = bufio.NewWriter(f)
+	} else {
+		output = bufio.NewWriter(os.Stdout)
 	}
 
-	if !block.Empty() {
-		blocks = append(blocks, block)
-		blocksByDate[block.date] = append(blocksByDate[block.date], &block)
+	defer output.Flush()
+
+	switch cmd {
+	case sortCmd.FullCommand():
+		ledger.Sort()
+		ledger.Export(output)
+	case dedupeCmd.FullCommand():
+		findDupes(ledger.blocks)
 	}
 
-	return blocks
+	if *inplace {
+		f, err = os.Create(*filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+		output.Flush()
+		f.Write(tempBuffer.Bytes())
+		f.Close()
+	}
 }
 
 // findDupes returns a list of likely duplicate blocks. Duplicates
