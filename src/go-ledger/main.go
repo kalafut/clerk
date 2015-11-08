@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +10,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 //type ynabRow struct {
@@ -20,11 +21,20 @@ import (
 var blocks []Block
 var blocksByDate = map[time.Time][]*Block{}
 
-func main() {
-	flag.Parse()
-	filename := flag.Arg(0)
+var (
+	app      = kingpin.New("clerk", "Ledger Helper")
+	filename = app.Flag("filename", "Ledger filename").Short('f').Default("master.dat").String()
+	inPlace  = app.Flag("inplace", "Edit file in place").Short('i').Bool()
+	sortCmd  = app.Command("sort", "Sort the ledger by date.")
+)
 
-	f, err := os.Open(filename)
+func main() {
+	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	case sortCmd.FullCommand():
+		println("SORT")
+	}
+
+	f, err := os.Open(*filename)
 	if err != nil {
 		log.Fatal(err)
 	}
