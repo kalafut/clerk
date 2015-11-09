@@ -43,20 +43,20 @@ func toAmount(v float64) Amount {
 	return Amount(int64(v * float64(multiplier)))
 }
 
-type Transaction struct {
+type _Transaction struct {
 	date    time.Time
 	summary string
 	entries []Entry
 }
 
-func NewTransaction(date, summary string, entries []Entry) Transaction {
+func NewTransaction(date, summary string, entries []Entry) _Transaction {
 	parsedDate, err := time.Parse("2006-01-02", date)
 
 	if err != nil {
 		log.Fatal("error parsing date:", err)
 	}
 
-	t := Transaction{
+	t := _Transaction{
 		date:    parsedDate,
 		summary: summary,
 		entries: entries,
@@ -65,7 +65,7 @@ func NewTransaction(date, summary string, entries []Entry) Transaction {
 	return t
 }
 
-func (t Transaction) balanced() bool {
+func (t _Transaction) balanced() bool {
 	var total Amount
 	for _, e := range t.entries {
 		total += e.amt
@@ -78,7 +78,7 @@ func (t Transaction) balanced() bool {
 // level of strictness:
 //
 //
-func Equal(a, b Transaction, strictness int) bool {
+func Equal(a, b _Transaction, strictness int) bool {
 	/*
 		balancesA := map[Account]*big.Rat{}
 		balancesB := map[Account]*big.Rat{}

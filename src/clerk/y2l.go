@@ -18,7 +18,7 @@ import (
 
 var acct = flag.String("a", "", "filter account")
 
-type Config struct {
+type _Config struct {
 	Ynab struct {
 		AccountMappings map[string]string
 	}
@@ -48,8 +48,8 @@ func _main() {
 	}
 }
 
-func parseConfig(data []byte) Config {
-	c := Config{}
+func parseConfig(data []byte) _Config {
+	c := _Config{}
 	dec := json.NewDecoder(bytes.NewReader(data))
 	err := dec.Decode(&c)
 	if err != nil {
@@ -78,7 +78,7 @@ func readCSV(filename string) [][]string {
 	return rows[1:]
 }
 
-func ynabRowConv(row []string, cfg Config) string {
+func ynabRowConv(row []string, cfg _Config) string {
 	var ledger string
 	var amt string
 
@@ -118,7 +118,7 @@ func ynabRowConv(row []string, cfg Config) string {
 	return ledger
 }
 
-func convertAccount(acct string, cfg Config) string {
+func convertAccount(acct string, cfg _Config) string {
 	if cnvt, ok := cfg.Ynab.AccountMappings[acct]; ok {
 		return cnvt
 	}
