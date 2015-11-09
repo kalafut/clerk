@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"sort"
-	"strings"
-	"time"
 )
 
 type Ledger struct {
@@ -14,7 +11,7 @@ type Ledger struct {
 }
 
 func NewLedger(data io.Reader) Ledger {
-	blocks := parse(data)
+	blocks := ParseLines(data)
 	return Ledger{
 		blocks: blocks,
 	}
@@ -31,40 +28,4 @@ func (l Ledger) Export(w io.Writer) {
 		}
 		fmt.Fprintln(w)
 	}
-}
-
-// parseFile read a legder-formatted text file and returns a slice of blocks
-func parse(data io.Reader) []Block {
-	var blocks []Block
-
-	scanner := bufio.NewScanner(data)
-
-	block := Block{}
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if len(strings.TrimSpace(line)) == 0 {
-			if !block.Empty() {
-				blocks = append(blocks, block)
-				block = Block{}
-			}
-		} else {
-			t, err := time.Parse("2006/01/02", line[0:10])
-			if err == nil {
-				// Start a new block
-				if !block.Empty() {
-					blocks = append(blocks, block)
-					block = Block{}
-				}
-				block.date = t
-			}
-			block.lines = append(block.lines, line)
-		}
-	}
-
-	if !block.Empty() {
-		blocks = append(blocks, block)
-	}
-
-	return blocks
 }

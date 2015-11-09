@@ -1,10 +1,30 @@
 package main
 
 import (
+	"bufio"
+	"io"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 )
+
+/*
+State machine concept...
+
+States:
+	BeforeBlock
+	LeadingComments
+	Summary
+	Postings
+
+Line classifications:
+	Empty
+	GlobalComment
+	Summary
+	TransactionComment
+	Posting
+*/
 
 // Blocks are a literal encapsulation of a ledger transaction. They
 // are not called transcactions because the actual ledger file strings
@@ -23,6 +43,7 @@ var acctAmtRegex = regexp.MustCompile(`^\s+(.*?\S)(?:\s{2,}.*?([\d,\.]+))?\s*$`)
 type Block struct {
 	lines []string
 	date  time.Time
+	valid bool
 }
 
 type ByDate []Block
@@ -31,6 +52,56 @@ func (a ByDate) Len() int           { return len(a) }
 func (a ByDate) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByDate) Less(i, j int) bool { return a[i].date.Before(a[j].date) }
 
+// ParseLines turns a chunk of text into a group of Blocks.
+func ParseLines(data io.Reader) []Block {
+	const (
+		stBeforeBlock = iota
+		stLeadingComments
+		stSummary
+		stPostings
+	)
+	var block Block
+	var blocks []Block
+	var state = stBeforeBlock
+	_ = state
+
+	scanner := bufio.NewScanner(data)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		switch state {
+		case stBeforeBlock:
+			if len(strings.TrimSpace(line)) > 0 {
+				block.lines = append(block.lines, line)
+			}
+
+		}
+
+		if len(strings.TrimSpace(line)) == 0 {
+			if !block.Empty() {
+				blocks = append(blocks, block)
+				block = Block{}
+			}
+		} else {
+			t, err := time.Parse("2006/01/02", line[0:10])
+			if err == nil {
+				// Start a new block
+				if !block.Empty() {
+					blocks = append(blocks, block)
+					block = Block{}
+				}
+				block.date = t
+			}
+			block.lines = append(block.lines, line)
+		}
+	}
+
+	if !block.Empty() {
+		blocks = append(blocks, block)
+	}
+
+	return blocks
+}
 func (b *Block) Empty() bool {
 	return len(b.lines) == 0
 }
@@ -103,4 +174,18 @@ func (b Block) IsDupe(other Block, tolerance time.Duration) bool {
 	}
 
 	return true
+}
+
+// prepareBlock processes []lines data, checking for errors and
+// populating internal fields
+func (b *Block) prepareBlock() {
+	b.valid = true
+}
+
+func isIndented(s string) bool {
+	return strings.IndexAny("s", " \t ") == 0
+}
+
+func isComment(s string) bool {
+	return strings.IndexAny("s", ";#|*%") == 0
 }
