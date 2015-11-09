@@ -20,6 +20,18 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/naoina/go-stringutil",
+			"repository": "https://github.com/naoina/go-stringutil",
+			"revision": "360db0db4b01d34e12a2ec042c09e7d37fece761",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/naoina/toml",
+			"repository": "https://github.com/naoina/toml",
+			"revision": "751171607256bb66e64c9f0220c00662420c38e9",
+			"branch": "master"
+		},
+		{
 			"importpath": "gopkg.in/alecthomas/kingpin.v2",
 			"repository": "https://gopkg.in/alecthomas/kingpin.v2",
 			"revision": "aef28d186e59d39ed537473dfce4472108ea1045",
