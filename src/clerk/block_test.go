@@ -74,6 +74,27 @@ func TestIsDupe(t *testing.T) {
 	is.True(b_base.IsDupe(b_test, 0*day))
 }
 
+func TestClassifyLine(t *testing.T) {
+	is := is.New(t)
+
+	tests := []struct {
+		line  string
+		class int
+	}{
+		{"", clsBlank},
+		{";Comment", clsComment},
+		{"2015/03/25 Simple summary", clsSummary},
+		{" a posting", clsPosting},
+		{" #a comment", clsTxnComment},
+	}
+
+	for _, t := range tests {
+		//println(t.line)
+		cls, _ := classifyLine(t.line)
+		is.Equal(cls, t.class)
+	}
+}
+
 func cloneBlock(orig Block) Block {
 	b := Block{
 		date:  orig.date,

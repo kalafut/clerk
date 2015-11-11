@@ -26,6 +26,28 @@ Line classifications:
 	Posting
 */
 
+const (
+	clsBlank = iota
+	clsComment
+	clsSummary
+	clsPosting
+	clsTxnComment
+	clsInvalid
+)
+
+const (
+	commentChars = ";#|*%"
+	blankChars   = " \t"
+)
+
+var (
+	reBlank      = regexp.MustCompile(`^\s*$`)
+	reComment    = regexp.MustCompile(`^[;#|\*%].*$`)
+	reSummary    = regexp.MustCompile(`^\d{4}/\d\d/\d\d.*$`)
+	rePosting    = regexp.MustCompile(`^\s+[^;#|\*%].*$`)
+	reTxnComment = regexp.MustCompile(`^\s+[;#|\*%].*$`)
+)
+
 // Blocks are a literal encapsulation of a ledger transaction. They
 // are not called transcactions because the actual ledger file strings
 // and comments are preserves. A ledger file is a sequence of blocks.
@@ -188,4 +210,23 @@ func isIndented(s string) bool {
 
 func isComment(s string) bool {
 	return strings.IndexAny("s", ";#|*%") == 0
+}
+
+func classifyLine(line string) (int, map[string]string) {
+	var cls = clsInvalid
+	var data = make(map[string]string)
+
+	if reBlank.MatchString(line) {
+		cls = clsBlank
+	} else if reComment.MatchString(line) {
+		cls = clsComment
+	} else if reSummary.MatchString(line) {
+		cls = clsSummary
+	} else if rePosting.MatchString(line) {
+		cls = clsPosting
+	} else if reTxnComment.MatchString(line) {
+		cls = clsTxnComment
+	}
+
+	return cls, data
 }
