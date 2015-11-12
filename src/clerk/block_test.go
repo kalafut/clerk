@@ -90,7 +90,7 @@ func TestClassifyLine(t *testing.T) {
 
 	for _, t := range tests {
 		//println(t.line)
-		cls, _ := classifyLine(t.line)
+		cls := classifyLine(t.line)
 		is.Equal(cls, t.class)
 	}
 }

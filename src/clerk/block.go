@@ -43,7 +43,7 @@ const (
 var (
 	reBlank      = regexp.MustCompile(`^\s*$`)
 	reComment    = regexp.MustCompile(`^[;#|\*%].*$`)
-	reSummary    = regexp.MustCompile(`^\d{4}/\d\d/\d\d.*$`)
+	reSummary    = regexp.MustCompile(`^(\d{4}/\d\d/\d\d).*$`)
 	rePosting    = regexp.MustCompile(`^\s+[^;#|\*%].*$`)
 	reTxnComment = regexp.MustCompile(`^\s+[;#|\*%].*$`)
 )
@@ -204,17 +204,8 @@ func (b *Block) prepareBlock() {
 	b.valid = true
 }
 
-func isIndented(s string) bool {
-	return strings.IndexAny("s", " \t ") == 0
-}
-
-func isComment(s string) bool {
-	return strings.IndexAny("s", ";#|*%") == 0
-}
-
-func classifyLine(line string) (int, map[string]string) {
+func classifyLine(line string) int {
 	var cls = clsInvalid
-	var data = make(map[string]string)
 
 	if reBlank.MatchString(line) {
 		cls = clsBlank
@@ -228,5 +219,5 @@ func classifyLine(line string) (int, map[string]string) {
 		cls = clsTxnComment
 	}
 
-	return cls, data
+	return cls
 }
