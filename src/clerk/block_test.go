@@ -75,23 +75,34 @@ func TestIsDupe(t *testing.T) {
 }
 
 func TestClassifyLine(t *testing.T) {
+	type ss map[string]string
 	is := is.New(t)
 
 	tests := []struct {
 		line  string
 		class int
+		data  ss
 	}{
-		{"", clsBlank},
-		{";Comment", clsComment},
-		{"2015/03/25 Simple summary", clsSummary},
-		{" a posting", clsPosting},
-		{" #a comment", clsTxnComment},
+		{"", clsBlank, nil},
+		{";Comment", clsComment, nil},
+		{"2015/03/25 Simple summary", clsSummary, ss{"date": "2015/03/25", "cleared": "", "code": ""}},
+		{"2015/03/25Simple summary", clsInvalid, nil},
+		{"2015/03/25 ! Simple summary", clsSummary, ss{"date": "2015/03/25", "cleared": "!", "code": ""}},
+		{"2015/03/25 * Simple summary", clsSummary, ss{"date": "2015/03/25", "cleared": "*", "code": ""}},
+		{"2015/03/25 * (523) Simple summary", clsSummary, ss{"date": "2015/03/25", "cleared": "*", "code": "523"}},
+		{"2015/03/25   !   (1a2)  Simple summary", clsSummary, ss{"date": "2015/03/25", "cleared": "!", "code": "1a2"}},
+		{" a posting", clsPosting, nil},
+		{" #a comment", clsTxnComment, nil},
 	}
 
 	for _, t := range tests {
 		//println(t.line)
-		cls := classifyLine(t.line)
+		cls, data := classifyLine(t.line)
 		is.Equal(cls, t.class)
+		is.Equal(len(data), len(t.data))
+		for k, _ := range data {
+			is.Equal(data[k], t.data[k])
+		}
 	}
 }
 

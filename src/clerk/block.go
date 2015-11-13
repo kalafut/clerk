@@ -43,7 +43,7 @@ const (
 var (
 	reBlank      = regexp.MustCompile(`^\s*$`)
 	reComment    = regexp.MustCompile(`^[;#|\*%].*$`)
-	reSummary    = regexp.MustCompile(`^(\d{4}/\d\d/\d\d).*$`)
+	reSummary    = regexp.MustCompile(`^(?P<date>\d{4}/\d\d/\d\d)(?: +(?P<cleared>[!\*]))?(?: +\((?P<code>.*?)\))? +.*$`)
 	rePosting    = regexp.MustCompile(`^\s+[^;#|\*%].*$`)
 	reTxnComment = regexp.MustCompile(`^\s+[;#|\*%].*$`)
 )
@@ -204,20 +204,34 @@ func (b *Block) prepareBlock() {
 	b.valid = true
 }
 
-func classifyLine(line string) int {
+func classifyLine(line string) (int, map[string]string) {
 	var cls = clsInvalid
+	var data map[string]string
+	var captures []string
+	var matchingRe *regexp.Regexp
 
 	if reBlank.MatchString(line) {
 		cls = clsBlank
 	} else if reComment.MatchString(line) {
 		cls = clsComment
-	} else if reSummary.MatchString(line) {
-		cls = clsSummary
 	} else if rePosting.MatchString(line) {
 		cls = clsPosting
 	} else if reTxnComment.MatchString(line) {
 		cls = clsTxnComment
+	} else if captures = reSummary.FindStringSubmatch(line); len(captures) > 0 {
+		cls = clsSummary
+		matchingRe = reSummary
 	}
 
-	return cls
+	if captures != nil {
+		data = make(map[string]string)
+		for i, key := range matchingRe.SubexpNames() {
+			if i > 0 {
+				data[key] = captures[i]
+			}
+		}
+	}
+
+	return cls, data
+
 }
