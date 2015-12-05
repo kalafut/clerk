@@ -50,16 +50,16 @@ var (
 
 // Blocks are a literal encapsulation of a ledger transaction. They
 // are not called transcactions because the actual ledger file strings
-// and comments are preserves. A ledger file is a sequence of blocks.
+// and comments are preserved. A ledger file is a sequence of blocks.
 //
 // Textually, a block is defined as:
 //    <0+ comment lines>
-//    <0 or 1 summary line: a) left justified  b) starting with a yyyy/mm/dd date>
+//    <0 or 1 summary line: a) left justified  b) starting with a yyyy/mm/dd date
 //    <0+ acccount lines or comments: a) indented at least one space>
 //
 // Whitespace between blocks is ignored.
 
-// Note: value will not have '-', intentionally
+// Note: values will not have '-', intentionally
 var acctAmtRegex = regexp.MustCompile(`^\s+(.*?\S)(?:\s{2,}.*?([\d,\.]+))?\s*$`)
 
 type Block struct {
