@@ -3,9 +3,10 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"log"
 	"os"
+
+	"github.com/kalafut/clerk"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -34,7 +35,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ledger := NewLedger(f)
+	ledger := clerk.NewLedger(f)
 	f.Close()
 
 	if *inplace {
@@ -57,7 +58,7 @@ func main() {
 		ledger.Sort()
 		ledger.Export(output)
 	case dedupeCmd.FullCommand():
-		findDupes(ledger.blocks)
+		clerk.FindDupes(ledger)
 	}
 
 	if *inplace {
@@ -68,18 +69,5 @@ func main() {
 		output.Flush()
 		f.Write(tempBuffer.Bytes())
 		f.Close()
-	}
-}
-
-// findDupes returns a list of likely duplicate blocks. Duplicates
-// are block with the same date and transaction structure. The same
-// accounts and amounts must be present in both for it to be dupe.
-func findDupes(blocks []Block) {
-	for i := range blocks {
-		for j := i + 1; j < len(blocks); j++ {
-			if blocks[i].IsDupe(blocks[j], 0) {
-				fmt.Printf("%v,%v:%v\n", i, j, blocks[i].lines[0])
-			}
-		}
 	}
 }

@@ -1,5 +1,5 @@
 // Common csv importer support
-package main
+package clerk
 
 type columnConfig struct {
 	date        string

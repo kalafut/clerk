@@ -1,7 +1,8 @@
-package main
+package clerk
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"regexp"
 	"sort"
@@ -233,5 +234,18 @@ func classifyLine(line string) (int, map[string]string) {
 	}
 
 	return cls, data
+}
 
+// FindDupes returns a list of likely duplicate blocks. Duplicates
+// are block with the same date and transaction structure. The same
+// accounts and amounts must be present in both for it to be dupe.
+func FindDupes(ledger Ledger) {
+	blocks := ledger.blocks
+	for i := range blocks {
+		for j := i + 1; j < len(blocks); j++ {
+			if blocks[i].IsDupe(blocks[j], 0) {
+				fmt.Printf("%v,%v:%v\n", i, j, blocks[i].lines[0])
+			}
+		}
+	}
 }
