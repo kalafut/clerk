@@ -3,6 +3,8 @@ package clerk
 import (
 	"fmt"
 	"io"
+	"log"
+	"os"
 	"sort"
 )
 
@@ -15,6 +17,15 @@ func NewLedger(data io.Reader) Ledger {
 	return Ledger{
 		blocks: blocks,
 	}
+}
+
+func NewLedgerFromFile(filename string) Ledger {
+	f, err := os.Open(filename)
+	defer f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return NewLedger(f)
 }
 
 func (l *Ledger) Sort() {

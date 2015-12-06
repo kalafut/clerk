@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -86,18 +87,17 @@ func ParseLines(data io.Reader) []Block {
 	var block Block
 	var blocks []Block
 	var state = stBeforeBlock
-	_ = state
 
 	scanner := bufio.NewScanner(data)
 
 	for scanner.Scan() {
+		//_ = "breakpoint"
 		line := scanner.Text()
 		switch state {
-		case stBeforeBlock:
-			if len(strings.TrimSpace(line)) > 0 {
-				block.lines = append(block.lines, line)
-			}
-
+		//case stBeforeBlock:
+		//	if len(strings.TrimSpace(line)) > 0 {
+		//		block.lines = append(block.lines, line)
+		//	}
 		}
 
 		if len(strings.TrimSpace(line)) == 0 {
@@ -248,4 +248,17 @@ func FindDupes(ledger Ledger) {
 			}
 		}
 	}
+}
+
+func NewBlock(t transaction, config AccountConfig) Block {
+	lines := fmt.Sprintf("%s   %s\n", t.date, t.description)
+	lines += fmt.Sprintf("    %s          %s\n", importAcct, t.amount)
+	lines += fmt.Sprintf("    %s", config.TargetAccount)
+
+	blocks := ParseLines(strings.NewReader(lines))
+	if len(blocks) != 1 {
+		log.Fatalf("Expected 1 block, got %+v", blocks)
+	}
+
+	return blocks[0]
 }

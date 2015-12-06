@@ -106,6 +106,25 @@ func TestClassifyLine(t *testing.T) {
 	}
 }
 
+func TestNewBlock(t *testing.T) {
+	is := is.New(t)
+
+	acctCfg := AccountConfig{
+		TargetAccount: "Assets:Bank:Chase Checking",
+	}
+	transaction := transaction{
+		date:        "2006/12/01",
+		description: "Test description",
+		amount:      "$65.00",
+	}
+
+	block := NewBlock(transaction, acctCfg)
+
+	is.Equal("2006/12/01   Test description", block.lines[0])
+	is.Equal("    __Uncategorized__          $65.00", block.lines[1])
+	is.Equal("    Assets:Bank:Chase Checking", block.lines[2])
+}
+
 func cloneBlock(orig Block) Block {
 	b := Block{
 		date:  orig.date,

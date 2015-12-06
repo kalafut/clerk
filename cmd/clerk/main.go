@@ -16,13 +16,14 @@ import (
 //"Account","Flag","Check Number","Date","Payee","Category","Master Category","Sub Category","Memo","Outflow","Inflow","Cleared","Running Balance"
 
 var (
-	app       = kingpin.New("clerk", "Ledger Helper")
-	filename  = app.Flag("filename", "Ledger filename").Short('f').Default("master.dat").String()
-	inplace   = app.Flag("inplace", "Edit file in place").Short('i').Bool()
-	outfile   = app.Flag("outfile", "Output file").Short('o').String()
-	sortCmd   = app.Command("sort", "Sort the ledger by date.")
-	dedupeCmd = app.Command("dedupe", "Deduplicate the ledger.")
-	importCmd = app.Command("import", "Import from external sources.")
+	app        = kingpin.New("clerk", "Ledger Helper")
+	ledgerFile = app.Flag("filename", "Ledger filename").Short('f').Default("master.dat").String()
+	importFile = app.Flag("csv", "CSV filename").String()
+	inplace    = app.Flag("inplace", "Edit file in place").Short('i').Bool()
+	outfile    = app.Flag("outfile", "Output file").Short('o').String()
+	sortCmd    = app.Command("sort", "Sort the ledger by date.")
+	dedupeCmd  = app.Command("dedupe", "Deduplicate the ledger.")
+	importCmd  = app.Command("import", "Import from external sources.")
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 	var tempBuffer bytes.Buffer
 
 	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
-	f, err := os.Open(*filename)
+	f, err := os.Open(*ledgerFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,10 +60,12 @@ func main() {
 		ledger.Export(output)
 	case dedupeCmd.FullCommand():
 		clerk.FindDupes(ledger)
+	case importCmd.FullCommand():
+		clerk.Import(*ledgerFile, *importFile)
 	}
 
 	if *inplace {
-		f, err = os.Create(*filename)
+		f, err = os.Create(*ledgerFile)
 		if err != nil {
 			log.Fatal(err)
 		}

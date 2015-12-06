@@ -1,5 +1,13 @@
 package clerk
 
+import (
+	"fmt"
+
+	"github.com/naoina/toml"
+)
+
+const importAcct = "__Uncategorized__"
+
 type transaction struct {
 	date        string
 	posted      string
@@ -9,6 +17,17 @@ type transaction struct {
 	cost        string
 	total       string
 	note        string
+}
+
+func (t *transaction) set(field, val string) {
+	switch field {
+	case "date":
+		t.date = val
+	case "description":
+		t.description = val
+	case "amount":
+		t.amount = val
+	}
 }
 
 type Importer interface {
@@ -27,4 +46,19 @@ func importAll(in Importer) []Block {
 	}
 
 	return blocks
+}
+
+func Import(ledgerFile, importFile string) {
+	ledger := NewLedgerFromFile(ledgerFile)
+
+	var config ImportConfig
+	if err := toml.Unmarshal([]byte(configToml), &config); err != nil {
+		panic(err)
+	}
+
+	csv := CSVImport(importFile, config.Accounts["Chase Checking"])
+	fmt.Println(csv)
+
+	_ = ledger
+	test()
 }
