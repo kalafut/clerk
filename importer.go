@@ -1,4 +1,4 @@
-package clerk
+package main
 
 import (
 	"fmt"

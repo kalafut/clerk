@@ -1,5 +1,5 @@
 // Common csv importer support
-package clerk
+package main
 
 import (
 	"encoding/csv"
