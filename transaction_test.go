@@ -1,7 +1,10 @@
 package main
 
 import (
+	"log"
+	"strings"
 	"testing"
+	"time"
 
 	"gopkg.in/tylerb/is.v1"
 )
@@ -46,4 +49,35 @@ func TestTransaction(test *testing.T) {
 
 	t = NewTransaction("2015-10-13", "Test Summary", []Entry{e1, e3, e3, e4, e5})
 	is.False(t.balanced())
+}
+
+func TestParse(test *testing.T) {
+	is := is.New(test)
+
+	p := parsePostings("  Assets:Checking   AAPL 50.00 &  Credit  -34.24  ")
+
+	is.Equal(2, len(p))
+
+	input := `
+2015/12/31, Payee or summary , Income  $-1351.32 & Assets:Bank:Chase Checking  $-1351.32, This is my New Years Eve??
+2015/12/31, Stock purchase,   ETrade  -1351.32 & ETrade  34 AAPL  &  ETrade  $1351.33  ,`
+	r := strings.NewReader(input)
+
+	transactions := ParseTransactions(r)
+
+	balance(transactions)
+
+	is.Equal(2, len(transactions))
+	is.Equal(date("2015/12/31"), transactions[0].date)
+	is.Equal("Payee or summary", transactions[0].summary)
+	is.Equal(date("2015/12/31"), transactions[1].date)
+}
+
+func date(s string) time.Time {
+	date, err := time.Parse(stdDate, s)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return date
 }
