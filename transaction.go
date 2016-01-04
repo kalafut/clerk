@@ -15,12 +15,19 @@ const multiplier = 100000
 const stdDate = "2006/01/02"
 const defaultCommodity = "$"
 
+var rootAccount = NewRootAccount()
+
 type Amount int64
-type Account string
+type Account struct {
+	name     string
+	children map[string]*Account
+	parent   *Account
+}
+
 type Commodity string
 
 type Posting struct {
-	account   Account
+	account   *Account
 	amount    *big.Rat
 	commodity Commodity
 }
@@ -34,8 +41,7 @@ type Transaction struct {
 
 type Entry struct {
 	acct Account
-	//amt  *big.Rat
-	amt Amount
+	amt  Amount
 }
 
 func NewEntry(acct Account, amt string) Entry {
@@ -146,6 +152,7 @@ func ParseTransactions(in io.Reader) []Transaction {
 var rePosting2 = regexp.MustCompile(`^(?P<account>.*?)\s{2,}(?P<comm1>[^-.0-9]*?)\s?(?P<amount>-?[.0-9]+)\s?(?P<comm2>[^-.0-9]*)$`)
 
 func parsePostings(p string) []Posting {
+	var comm Commodity
 	postings := []Posting{}
 
 	for _, posting := range strings.Split(p, "&") {
@@ -163,23 +170,25 @@ func parsePostings(p string) []Posting {
 			}
 		}
 
-		var comm string
-		if result["comm1"] != "" && result["comm2"] != "" {
-			log.Fatalf("Multiple commmdities in posting: %s", posting)
-		} else if result["comm1"] != "" {
-			comm = result["comm1"]
-		} else if result["comm2"] != "" {
-			comm = result["comm2"]
-		} else {
+		c1, c2 := result["comm1"], result["comm2"]
+
+		switch {
+		case c1 != "" && c2 != "":
+			log.Fatalf("Multiple commmodities in posting: %s", posting)
+		case c1 != "":
+			comm = Commodity(c1)
+		case c2 != "":
+			comm = Commodity(c2)
+		default:
 			comm = defaultCommodity
 		}
 
 		r := new(big.Rat)
 		r.SetString(result["amount"])
 		p := Posting{
-			account:   Account(result["account"]),
+			account:   rootAccount.findOrAddAccount(result["account"]),
 			amount:    r,
-			commodity: Commodity(comm),
+			commodity: comm,
 		}
 
 		postings = append(postings, p)
@@ -188,27 +197,47 @@ func parsePostings(p string) []Posting {
 	return postings
 }
 
-func balance(tranactions []Transaction) {
-	balances := map[Account]map[Commodity]*big.Rat{}
+type AccountBalance struct {
+	account  Account
+	balances map[Commodity]*big.Rat
+}
 
-	for _, t := range tranactions {
-		for _, p := range t.postings {
-			if balances[p.account] == nil {
-				balances[p.account] = map[Commodity]*big.Rat{}
-			}
+type AccountTree struct {
+	node     *Account // nil for root
+	children []*Account
+}
 
-			if balances[p.account][p.commodity] == nil {
-				balances[p.account][p.commodity] = big.NewRat(0, 1)
-			}
+var root AccountTree
 
-			bal := balances[p.account][p.commodity]
-			bal.Add(bal, p.amount)
-		}
+func NewRootAccount() *Account {
+	return &Account{children: make(map[string]*Account)}
+}
+
+func (acct *Account) findOrAddAccount(acctName string) *Account {
+	var child *Account
+	var name string
+	var ok bool
+
+	idx := strings.Index(acctName, ":")
+	if idx == -1 {
+		name = acctName
+	} else {
+		name = acctName[0:idx]
 	}
 
-	for a := range balances {
-		for c, v := range balances[a] {
-			fmt.Printf("%v  %v  %v\n", a, c, v.FloatString(2))
+	if child, ok = acct.children[name]; !ok {
+		child = &Account{
+			name:     name,
+			children: make(map[string]*Account),
+			parent:   acct,
 		}
+		acct.children[name] = child
 	}
+
+	if idx != -1 {
+		child = child.findOrAddAccount(acctName[idx+1:])
+	}
+
+	return child
+
 }
