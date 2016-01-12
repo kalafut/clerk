@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/big"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 )
@@ -213,6 +214,28 @@ func NewRootAccount() *Account {
 	return &Account{children: make(map[string]*Account)}
 }
 
+func (acct Account) allSorted() []string {
+	childAccts := make([]string, 0, len(acct.children))
+	for a := range acct.children {
+		childAccts = append(childAccts, a)
+	}
+
+	sort.Strings(childAccts)
+	return childAccts
+}
+
+func (acct *Account) level() int {
+	var p *Account
+	level := 0
+
+	p = acct
+	for p.parent != nil {
+		level++
+		p = p.parent
+	}
+
+	return level
+}
 func (acct *Account) findOrAddAccount(acctName string) *Account {
 	var child *Account
 	var name string
