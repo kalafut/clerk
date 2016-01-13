@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"io/ioutil"
 	"log"
-	"strings"
 	"testing"
 	"time"
 
@@ -60,11 +61,8 @@ func TestParse(test *testing.T) {
 
 	is.Equal(2, len(p))
 
-	input := `
-2015/12/31, Payee or summary , A:B:C:D  $100, This is my New Years Eve??
-2015/12/31, Payee or summary , Income  $-1351.32 & Assets:Bank:Chase Checking  $-1351.32, This is my New Years Eve??
-2015/12/31, Stock purchase,   ETrade  -351.32 & ETrade  34 AAPL  &  ETrade  $151.33  ,`
-	r := strings.NewReader(input)
+	input, _ := ioutil.ReadFile("test_data/test1")
+	r := bytes.NewReader(input)
 
 	transactions := ParseTransactions(r)
 
@@ -72,17 +70,6 @@ func TestParse(test *testing.T) {
 	is.Equal(date("2015/12/31"), transactions[0].date)
 	is.Equal("Payee or summary", transactions[0].summary)
 	is.Equal(date("2015/12/31"), transactions[1].date)
-}
-
-func TestBlah(test *testing.T) {
-	input := `
-2015/12/31, Payee or summary , A:B:C:D  $100, This is my New Years Eve??
-2015/12/31, Payee or summary , A:B:F  $100, This is my New Years Eve??
-2015/12/31, Payee or summary , Income  $-1351.32 & Assets:Bank:Chase Checking  $-1351.32, This is my New Years Eve??
-2015/12/31, Stock purchase,   ETrade  -351.32 & ETrade  34 AAPL  &  ETrade  $151.33  ,`
-	r := strings.NewReader(input)
-	transactions := ParseTransactions(r)
-	balanceReport(transactions)
 }
 
 func date(s string) time.Time {

@@ -111,9 +111,9 @@ func parsePostings(p string) []Posting {
 		case c1 != "" && c2 != "":
 			log.Fatalf("Multiple commmodities in posting: %s", posting)
 		case c1 != "":
-			comm = Commodity{abbr: c1}
+			comm = Commodity{abbr: c1} // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
 		case c2 != "":
-			comm = Commodity{abbr: c2}
+			comm = Commodity{abbr: c2, postfix: true}
 		default:
 			comm = defaultCommodity
 		}

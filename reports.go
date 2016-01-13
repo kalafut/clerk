@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 	"sort"
 	"strings"
+	"text/tabwriter"
 )
 
 type MultiBalance map[*Account]map[Commodity]*big.Rat
@@ -32,7 +34,11 @@ func (m MultiBalance) AddUp(acct *Account, comm Commodity, amt *big.Rat) {
 	}
 }
 
-func balanceReport(tranactions []Transaction) {
+var w = new(tabwriter.Writer)
+
+func balanceReport(tranactions []Transaction) string {
+	var b bytes.Buffer
+	w.Init(&b, 0, 0, 1, ' ', 0)
 	balances := MultiBalance{}
 
 	for _, t := range tranactions {
@@ -42,11 +48,21 @@ func balanceReport(tranactions []Transaction) {
 	}
 
 	traverse(rootAccount, balances)
+	w.Flush()
+	return b.String()
 }
 
-func traverse(acct *Account, balances MultiBalance) {
-	for c, v := range balances[acct] {
-		fmt.Printf("%s%v  %v  %v\n", strings.Repeat(" ", 2*(acct.level()-1)), acct.name, c, v.FloatString(2))
+func traverse(acct *Account, balances MultiBalance) string {
+	var result string
+
+	for commodity, value := range balances[acct] {
+		var valstr string
+		if commodity.postfix {
+			valstr = value.FloatString(2) + " " + commodity.abbr
+		} else {
+			valstr = commodity.abbr + " " + value.FloatString(2)
+		}
+		fmt.Fprintf(w, "%s%v\t%v\n", strings.Repeat(" ", 2*(acct.level()-1)), acct.name, valstr)
 	}
 
 	children := make([]string, 0, len(acct.children))
@@ -58,4 +74,6 @@ func traverse(acct *Account, balances MultiBalance) {
 	for _, child := range children {
 		traverse(acct.children[child], balances)
 	}
+
+	return result
 }
