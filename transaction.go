@@ -12,9 +12,6 @@ import (
 
 const multiplier = 100000
 const stdDate = "2006/01/02"
-const defaultCommodity = "$"
-
-type Commodity string
 
 type Posting struct {
 	account   *Account
@@ -114,9 +111,9 @@ func parsePostings(p string) []Posting {
 		case c1 != "" && c2 != "":
 			log.Fatalf("Multiple commmodities in posting: %s", posting)
 		case c1 != "":
-			comm = Commodity(c1)
+			comm = Commodity{abbr: c1}
 		case c2 != "":
-			comm = Commodity(c2)
+			comm = Commodity{abbr: c2}
 		default:
 			comm = defaultCommodity
 		}
