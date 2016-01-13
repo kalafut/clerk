@@ -2,12 +2,10 @@ package main
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"log"
 	"math/big"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 )
@@ -15,15 +13,6 @@ import (
 const multiplier = 100000
 const stdDate = "2006/01/02"
 const defaultCommodity = "$"
-
-var rootAccount = NewRootAccount()
-
-type Amount int64
-type Account struct {
-	name     string
-	children map[string]*Account
-	parent   *Account
-}
 
 type Commodity string
 
@@ -40,81 +29,29 @@ type Transaction struct {
 	note     string
 }
 
-type Entry struct {
-	acct Account
-	amt  Amount
-}
-
-func NewEntry(acct Account, amt string) Entry {
-	e := Entry{
-		acct: acct,
-		amt:  parseAmount(amt),
-	}
-	return e
-}
-
-func parseAmount(amt string) Amount {
-	var val float64
-	//r := new(big.Rat)
-	cleaned := strings.Replace(amt, "$", "", -1)
-
-	_, err := fmt.Sscanf(cleaned, "%f", &val)
-	if err != nil {
-		log.Fatal("error scanning value:", err)
-	}
-
-	return toAmount(val)
-}
-
-func toAmount(v float64) Amount {
-	return Amount(int64(v * float64(multiplier)))
-}
-
-type _Transaction struct {
-	date    time.Time
-	summary string
-	entries []Entry
-}
-
-func NewTransaction(date, summary string, entries []Entry) _Transaction {
-	parsedDate, err := time.Parse("2006-01-02", date)
-
-	if err != nil {
-		log.Fatal("error parsing date:", err)
-	}
-
-	t := _Transaction{
-		date:    parsedDate,
-		summary: summary,
-		entries: entries,
-	}
-
-	return t
-}
-
-func (t _Transaction) balanced() bool {
-	var total Amount
-	for _, e := range t.entries {
-		total += e.amt
-	}
-
-	return total == 0
-}
+//func (t _Transaction) balanced() bool {
+//	var total Amount
+//	for _, e := range t.entries {
+//		total += e.amt
+//	}
+//
+//	return total == 0
+//}
 
 // Equal tests whether two transactions are equal according to the given
 // level of strictness:
 //
 //
-func Equal(a, b _Transaction, strictness int) bool {
-	/*
-		balancesA := map[Account]*big.Rat{}
-		balancesB := map[Account]*big.Rat{}
-
-		for _,t:=range a.entries {
-		}
-	*/
-	return true
-}
+//func Equal(a, b _Transaction, strictness int) bool {
+//	/*
+//		balancesA := map[Account]*big.Rat{}
+//		balancesB := map[Account]*big.Rat{}
+//
+//		for _,t:=range a.entries {
+//		}
+//	*/
+//	return true
+//}
 
 func ParseTransactions(in io.Reader) []Transaction {
 	trans := []Transaction{}
@@ -196,71 +133,4 @@ func parsePostings(p string) []Posting {
 
 	}
 	return postings
-}
-
-type AccountBalance struct {
-	account  Account
-	balances map[Commodity]*big.Rat
-}
-
-type AccountTree struct {
-	node     *Account // nil for root
-	children []*Account
-}
-
-var root AccountTree
-
-func NewRootAccount() *Account {
-	return &Account{children: make(map[string]*Account)}
-}
-
-func (acct Account) allSorted() []string {
-	childAccts := make([]string, 0, len(acct.children))
-	for a := range acct.children {
-		childAccts = append(childAccts, a)
-	}
-
-	sort.Strings(childAccts)
-	return childAccts
-}
-
-func (acct *Account) level() int {
-	var p *Account
-	level := 0
-
-	p = acct
-	for p.parent != nil {
-		level++
-		p = p.parent
-	}
-
-	return level
-}
-func (acct *Account) findOrAddAccount(acctName string) *Account {
-	var child *Account
-	var name string
-	var ok bool
-
-	idx := strings.Index(acctName, ":")
-	if idx == -1 {
-		name = acctName
-	} else {
-		name = acctName[0:idx]
-	}
-
-	if child, ok = acct.children[name]; !ok {
-		child = &Account{
-			name:     name,
-			children: make(map[string]*Account),
-			parent:   acct,
-		}
-		acct.children[name] = child
-	}
-
-	if idx != -1 {
-		child = child.findOrAddAccount(acctName[idx+1:])
-	}
-
-	return child
-
 }
