@@ -9,13 +9,14 @@ import (
 )
 
 type Ledger struct {
-	blocks []Block
+	blocks       []Block
+	transactions []Transaction
 }
 
 func NewLedger(data io.Reader) Ledger {
-	blocks := ParseLines(data)
+	transactions := ParseTransactions(data)
 	return Ledger{
-		blocks: blocks,
+		transactions: transactions,
 	}
 }
 
@@ -33,10 +34,7 @@ func (l *Ledger) Sort() {
 }
 
 func (l Ledger) Export(w io.Writer) {
-	for _, b := range l.blocks {
-		for _, line := range b.lines {
-			fmt.Fprintln(w, line)
-		}
-		fmt.Fprintln(w)
+	for _, t := range l.transactions {
+		fmt.Fprint(w, t.toCSV())
 	}
 }

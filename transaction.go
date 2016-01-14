@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
-	"fmt"
 	"io"
 	"log"
 	"math/big"
@@ -26,14 +26,28 @@ type Transaction struct {
 	note     string
 }
 
-//func (t _Transaction) balanced() bool {
-//	var total Amount
-//	for _, e := range t.entries {
-//		total += e.amt
-//	}
-//
-//	return total == 0
-//}
+func (t Transaction) toCSV() string {
+	var buf bytes.Buffer
+	var postings bytes.Buffer
+
+	for _, p := range t.postings {
+		postings.WriteString(p.account.name)
+		postings.WriteString("  &  ")
+	}
+
+	w := csv.NewWriter(&buf)
+	record := []string{
+		t.date.Format(stdDate),
+		t.summary,
+		postings.String(),
+		t.note,
+	}
+
+	w.Write(record)
+	w.Flush()
+
+	return buf.String()
+}
 
 // Equal tests whether two transactions are equal according to the given
 // level of strictness:
@@ -131,8 +145,7 @@ func checkBalance(postings []Posting) bool {
 	}
 
 	if !sum.Zero() {
-		fmt.Println(sum)
+		// do something
 	}
 	return true
-
 }
