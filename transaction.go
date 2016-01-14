@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"math/big"
@@ -14,9 +15,8 @@ const multiplier = 100000
 const stdDate = "2006/01/02"
 
 type Posting struct {
-	account   *Account
-	amount    *big.Rat
-	commodity Commodity
+	account *Account
+	amount  Amount
 }
 
 type Transaction struct {
@@ -71,14 +71,6 @@ func ParseTransactions(in io.Reader) []Transaction {
 			postings: parsePostings(record[2]),
 		}
 		trans = append(trans, t)
-
-		/*
-			for k, v := range config.Columns {
-				t.set(k, record[v])
-			}
-
-			out = append(out, t)
-		*/
 	}
 
 	return trans
@@ -121,13 +113,26 @@ func parsePostings(p string) []Posting {
 		r := new(big.Rat)
 		r.SetString(result["amount"])
 		p := Posting{
-			account:   rootAccount.findOrAddAccount(result["account"]),
-			amount:    r,
-			commodity: comm,
+			account: rootAccount.findOrAddAccount(result["account"]),
+			amount:  NewAmount(result["amount"], comm),
 		}
 
 		postings = append(postings, p)
-
 	}
+	checkBalance(postings)
 	return postings
+}
+
+func checkBalance(postings []Posting) bool {
+	sum := Amount{}
+
+	for _, p := range postings {
+		sum.Add(p.amount)
+	}
+
+	if !sum.Zero() {
+		fmt.Println(sum)
+	}
+	return true
+
 }

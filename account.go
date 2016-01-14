@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math/big"
 	"sort"
 	"strings"
 )
@@ -12,11 +11,6 @@ type Account struct {
 	name     string
 	children map[string]*Account
 	parent   *Account
-}
-
-type AccountBalance struct {
-	account  Account
-	balances map[Commodity]*big.Rat
 }
 
 func NewRootAccount() *Account {

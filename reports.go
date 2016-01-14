@@ -3,34 +3,26 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"math/big"
 	"sort"
 	"strings"
 	"text/tabwriter"
 )
 
-type MultiBalance map[*Account]map[Commodity]*big.Rat
+type MultiBalance map[*Account]Amount
 
-func (m MultiBalance) Add(acct *Account, comm Commodity, amt *big.Rat) {
+func (m MultiBalance) Add(acct *Account, amt Amount) {
 	if m[acct] == nil {
-		m[acct] = map[Commodity]*big.Rat{}
+		m[acct] = Amount{}
 	}
 
-	if m[acct][comm] == nil {
-		m[acct][comm] = big.NewRat(0, 1)
-	}
-
-	bal := m[acct][comm]
-	bal.Add(bal, amt)
+	m[acct].Add(amt)
 }
 
-func (m MultiBalance) AddUp(acct *Account, comm Commodity, amt *big.Rat) {
-	m.Add(acct, comm, amt)
-	//	fmt.Printf("On: %v\n", acct.name) // (parent: %v)\n", acct.name, acct.parent.name)
+func (m MultiBalance) AddUp(acct *Account, amt Amount) {
+	m.Add(acct, amt)
 
-	// Because the single root account is not used, look two levels up
 	if acct.parent.parent != nil {
-		m.AddUp(acct.parent, comm, amt)
+		m.AddUp(acct.parent, amt)
 	}
 }
 
@@ -43,7 +35,7 @@ func balanceReport(tranactions []Transaction) string {
 
 	for _, t := range tranactions {
 		for _, p := range t.postings {
-			balances.AddUp(p.account, p.commodity, p.amount)
+			balances.AddUp(p.account, p.amount)
 		}
 	}
 

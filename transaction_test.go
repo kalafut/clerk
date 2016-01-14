@@ -61,7 +61,7 @@ func TestParse(test *testing.T) {
 
 	is.Equal(2, len(p))
 
-	input, _ := ioutil.ReadFile("test_data/test1")
+	input, _ := ioutil.ReadFile("test_data/test1.csv")
 	r := bytes.NewReader(input)
 
 	transactions := ParseTransactions(r)
