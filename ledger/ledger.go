@@ -1,15 +1,14 @@
-package main
+package ledger
 
 import (
 	"fmt"
 	"io"
 	"log"
 	"os"
-	"sort"
 )
 
 type Ledger struct {
-	blocks       []Block
+	//blocks       []Block
 	transactions []Transaction
 }
 
@@ -30,7 +29,7 @@ func NewLedgerFromFile(filename string) Ledger {
 }
 
 func (l *Ledger) Sort() {
-	sort.Sort(ByDate(l.blocks))
+	//sort.Sort(ByDate(l.blocks))
 }
 
 func (l Ledger) Export(w io.Writer) {

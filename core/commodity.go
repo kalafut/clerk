@@ -1,18 +1,21 @@
-package main
+package core
 
 import "math/big"
 
-var defaultCommodity = Commodity{abbr: "$"}
+var DefaultCommodity = Commodity{Abbr: "$"}
 
 type Commodity struct {
-	abbr    string
-	postfix bool
+	Abbr    string
+	Postfix bool
 }
 
 func (c Commodity) String() string {
-	return c.abbr
+	return c.Abbr
 }
 
+// Amounts are full precision (rational) values of one or more commodities, e.g. ($4, 34 AAPL). Though most
+// quantities in ledgers deal in a single commodity, is it simpler for any Amount to consist of multiple
+// commodities. Some support functions assume a single commodity and will complain otherwise.
 type Amount map[Commodity]*big.Rat
 
 func NewAmount(qty string, cmdty Commodity) Amount {

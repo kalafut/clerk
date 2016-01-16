@@ -1,20 +1,28 @@
-package main
+package ledger
 
 import (
 	"sort"
 	"strings"
 )
 
-var rootAccount = NewRootAccount()
+var RootAccount = NewRootAccount()
 
 type Account struct {
-	name     string
+	Name     string
 	children map[string]*Account
 	parent   *Account
 }
 
 func NewRootAccount() *Account {
 	return &Account{children: make(map[string]*Account)}
+}
+
+func (a Account) Parent() *Account {
+	return a.parent
+}
+
+func (a Account) Children() map[string]*Account {
+	return a.children
 }
 
 func (acct Account) allSorted() []string {
@@ -27,7 +35,7 @@ func (acct Account) allSorted() []string {
 	return childAccts
 }
 
-func (acct *Account) level() int {
+func (acct *Account) Level() int {
 	var p *Account
 	level := 0
 
@@ -53,7 +61,7 @@ func (acct *Account) findOrAddAccount(acctName string) *Account {
 
 	if child, ok = acct.children[name]; !ok {
 		child = &Account{
-			name:     name,
+			Name:     name,
 			children: make(map[string]*Account),
 			parent:   acct,
 		}

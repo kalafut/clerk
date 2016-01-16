@@ -1,4 +1,4 @@
-package main
+package ledger
 
 import (
 	"testing"
@@ -11,12 +11,12 @@ func TestAccount(test *testing.T) {
 
 	root := NewRootAccount()
 
-	is.Equal("", root.name)
+	is.Equal("", root.Name)
 
 	acct := root.findOrAddAccount("this:is:a:test")
-	is.Equal("test", root.children["this"].children["is"].children["a"].children["test"].name)
-	is.Equal("test", acct.name)
-	is.Equal("a", acct.parent.name)
+	is.Equal("test", root.children["this"].children["is"].children["a"].children["test"].Name)
+	is.Equal("test", acct.Name)
+	is.Equal("a", acct.parent.Name)
 
 	acct2 := root.findOrAddAccount("this:is:a:test")
 	is.Equal(acct, acct2)

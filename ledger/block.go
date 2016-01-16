@@ -1,15 +1,4 @@
-package main
-
-import (
-	"bufio"
-	"fmt"
-	"io"
-	"log"
-	"regexp"
-	"sort"
-	"strings"
-	"time"
-)
+package ledger
 
 /*
 State machine concept...
@@ -27,6 +16,8 @@ Line classifications:
 	TransactionComment
 	Posting
 */
+
+/*
 
 const (
 	clsBlank = iota
@@ -262,3 +253,4 @@ func NewBlock(t transaction, config AccountConfig) Block {
 
 	return blocks[0]
 }
+*/

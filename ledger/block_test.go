@@ -1,4 +1,6 @@
-package main
+package ledger
+
+/*
 
 import (
 	"testing"
@@ -134,3 +136,4 @@ func cloneBlock(orig Block) Block {
 
 	return b
 }
+*/

@@ -1,4 +1,4 @@
-package main
+package ledger
 
 import (
 	"bytes"
@@ -67,9 +67,9 @@ func TestParse(test *testing.T) {
 	transactions := ParseTransactions(r)
 
 	is.Equal(3, len(transactions))
-	is.Equal(date("2015/12/31"), transactions[0].date)
-	is.Equal("Payee or summary", transactions[0].summary)
-	is.Equal(date("2015/12/31"), transactions[1].date)
+	is.Equal(date("2015/12/31"), transactions[0].Date)
+	is.Equal("Payee or summary", transactions[0].Summary)
+	is.Equal(date("2015/12/31"), transactions[1].Date)
 }
 
 func date(s string) time.Time {

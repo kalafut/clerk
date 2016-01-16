@@ -1,4 +1,4 @@
-package main
+package ledger
 
 import (
 	"bytes"
@@ -9,38 +9,40 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/kalafut/clerk/core"
 )
 
 const multiplier = 100000
 const stdDate = "2006/01/02"
 
 type Posting struct {
-	account *Account
-	amount  Amount
+	Account *Account
+	Amount  core.Amount
 }
 
 type Transaction struct {
-	date     time.Time
-	summary  string
-	postings []Posting
-	note     string
+	Date     time.Time
+	Summary  string
+	Postings []Posting
+	Note     string
 }
 
 func (t Transaction) toCSV() string {
 	var buf bytes.Buffer
 	var postings bytes.Buffer
 
-	for _, p := range t.postings {
-		postings.WriteString(p.account.name)
+	for _, p := range t.Postings {
+		postings.WriteString(p.Account.Name)
 		postings.WriteString("  &  ")
 	}
 
 	w := csv.NewWriter(&buf)
 	record := []string{
-		t.date.Format(stdDate),
-		t.summary,
+		t.Date.Format(stdDate),
+		t.Summary,
 		postings.String(),
-		t.note,
+		t.Note,
 	}
 
 	w.Write(record)
@@ -80,9 +82,9 @@ func ParseTransactions(in io.Reader) []Transaction {
 		}
 
 		t := Transaction{
-			date:     date,
-			summary:  strings.TrimSpace(record[1]),
-			postings: parsePostings(record[2]),
+			Date:     date,
+			Summary:  strings.TrimSpace(record[1]),
+			Postings: parsePostings(record[2]),
 		}
 		trans = append(trans, t)
 	}
@@ -93,7 +95,7 @@ func ParseTransactions(in io.Reader) []Transaction {
 var rePosting2 = regexp.MustCompile(`^(?P<account>.*?)\s{2,}(?P<comm1>[^-.0-9]*?)\s?(?P<amount>-?[.0-9]+)\s?(?P<comm2>[^-.0-9]*)$`)
 
 func parsePostings(p string) []Posting {
-	var comm Commodity
+	var comm core.Commodity
 	postings := []Posting{}
 
 	for _, posting := range strings.Split(p, "&") {
@@ -117,18 +119,18 @@ func parsePostings(p string) []Posting {
 		case c1 != "" && c2 != "":
 			log.Fatalf("Multiple commmodities in posting: %s", posting)
 		case c1 != "":
-			comm = Commodity{abbr: c1} // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
+			comm = core.Commodity{Abbr: c1} // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
 		case c2 != "":
-			comm = Commodity{abbr: c2, postfix: true}
+			comm = core.Commodity{Abbr: c2, Postfix: true}
 		default:
-			comm = defaultCommodity
+			comm = core.DefaultCommodity
 		}
 
 		r := new(big.Rat)
 		r.SetString(result["amount"])
 		p := Posting{
-			account: rootAccount.findOrAddAccount(result["account"]),
-			amount:  NewAmount(result["amount"], comm),
+			Account: RootAccount.findOrAddAccount(result["account"]),
+			Amount:  core.NewAmount(result["amount"], comm),
 		}
 
 		postings = append(postings, p)
@@ -138,10 +140,10 @@ func parsePostings(p string) []Posting {
 }
 
 func checkBalance(postings []Posting) bool {
-	sum := Amount{}
+	sum := core.Amount{}
 
 	for _, p := range postings {
-		sum.Add(p.amount)
+		sum.Add(p.Amount)
 	}
 
 	if !sum.Zero() {
