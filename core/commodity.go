@@ -1,22 +1,19 @@
 package core
 
-import "math/big"
+import (
+	"fmt"
+	"math/big"
+)
 
-var DefaultCommodity = Commodity{Abbr: "$"}
-
-type Commodity struct {
-	Abbr    string
-	Postfix bool
-}
-
-func (c Commodity) String() string {
-	return c.Abbr
-}
+type Commodity string
 
 // Amounts are full precision (rational) values of one or more commodities, e.g. ($4, 34 AAPL). Though most
 // quantities in ledgers deal in a single commodity, is it simpler for any Amount to consist of multiple
 // commodities. Some support functions assume a single commodity and will complain otherwise.
 type Amount map[Commodity]*big.Rat
+
+const DefaultCommodity = Commodity("$")
+const StdDate = "2006/01/02"
 
 func NewAmount(qty string, cmdty Commodity) Amount {
 	r := new(big.Rat)
@@ -47,4 +44,18 @@ func (amt Amount) Zero() bool {
 	}
 
 	return true
+}
+
+func (amt Amount) Strings() []string {
+	strs := []string{}
+
+	for com, val := range amt {
+		if com == "$" { // hack
+			strs = append(strs, fmt.Sprintf("%s %s", com, val.FloatString(2)))
+		} else {
+			strs = append(strs, fmt.Sprintf("%s %s", val.FloatString(2), com))
+		}
+	}
+
+	return strs
 }

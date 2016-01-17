@@ -7,12 +7,21 @@ import (
 	"os"
 )
 
+// Ledger is the highest level container, containing transactions and all related
+// accounts and commodities.
 type Ledger struct {
-	//blocks       []Block
+	rootAccount  *Account
 	transactions []Transaction
 }
 
 func NewLedger(data io.Reader) Ledger {
+	return Ledger{
+		rootAccount:  NewRootAccount(),
+		transactions: []Transaction{},
+	}
+}
+
+func NewLedgerReader(data io.Reader) Ledger {
 	transactions := ParseTransactions(data)
 	return Ledger{
 		transactions: transactions,
@@ -25,7 +34,7 @@ func NewLedgerFromFile(filename string) Ledger {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return NewLedger(f)
+	return NewLedgerReader(f)
 }
 
 func (l *Ledger) Sort() {

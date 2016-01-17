@@ -1,5 +1,102 @@
 // Common csv importer support
-package main
+package io
+
+import (
+	"encoding/csv"
+	"io"
+	"log"
+	"math/big"
+	"regexp"
+	"strings"
+	"time"
+
+	"github.com/kalafut/clerk/core"
+	"github.com/kalafut/clerk/ledger"
+)
+
+type CSVTxReader struct {
+	reader *csv.Reader
+}
+
+func NewCSVTxReader(r io.Reader) CSVTxReader {
+	return CSVTxReader{
+		reader: csv.NewReader(r),
+	}
+}
+
+func (r CSVTxReader) Read(root *ledger.Account) []ledger.Transaction {
+	trans := []ledger.Transaction{}
+
+	for {
+		record, err := r.reader.Read()
+		if err == io.EOF {
+			break
+		}
+
+		date, err := time.Parse(core.StdDate, record[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		t := ledger.Transaction{
+			Date:     date,
+			Summary:  strings.TrimSpace(record[1]),
+			Postings: parsePostings(root, record[2]),
+		}
+		trans = append(trans, t)
+	}
+
+	return trans
+}
+
+var rePosting2 = regexp.MustCompile(`^(?P<account>.*?)\s{2,}(?P<comm1>[^-.0-9]*?)\s?(?P<amount>-?[.0-9]+)\s?(?P<comm2>[^-.0-9]*)$`)
+
+func parsePostings(root *ledger.Account, p string) []ledger.Posting {
+	var comm core.Commodity
+	postings := []ledger.Posting{}
+
+	for _, posting := range strings.Split(p, "&") {
+		posting = strings.TrimSpace(posting)
+		match := rePosting2.FindStringSubmatch(posting)
+
+		if len(match) == 0 {
+			log.Fatalf("Invalid posting: %s", posting)
+		}
+
+		result := make(map[string]string)
+		for i, name := range rePosting2.SubexpNames() {
+			if i != 0 {
+				result[name] = match[i]
+			}
+		}
+
+		c1, c2 := result["comm1"], result["comm2"]
+
+		switch {
+		case c1 != "" && c2 != "":
+			log.Fatalf("Multiple commmodities in posting: %s", posting)
+		case c1 != "":
+			comm = core.Commodity(c1) // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
+		case c2 != "":
+			comm = core.Commodity(c2)
+		default:
+			comm = core.DefaultCommodity
+		}
+
+		r := new(big.Rat)
+		r.SetString(result["amount"])
+		p := ledger.Posting{
+			Account: root.FindOrAddAccount(result["account"]),
+			Amount:  core.NewAmount(result["amount"], comm),
+		}
+
+		postings = append(postings, p)
+	}
+	//checkBalance(postings)
+	return postings
+}
+
+/*
 
 import (
 	"encoding/csv"
@@ -87,18 +184,17 @@ type AccountConfig struct {
 	Columns       map[string]int
 }
 
-/*
-type transaction struct {
-	date        string
-	posted      string
-	code        string
-	description string
-	amount      string
-	cost        string
-	total       string
-	note        string
-}
-*/
+//type transaction struct {
+//	date        string
+//	posted      string
+//	code        string
+//	description string
+//	amount      string
+//	cost        string
+//	total       string
+//	note        string
+//}
+
 func test() {
 	var config ImportConfig
 	if err := toml.Unmarshal([]byte(configToml), &config); err != nil {
@@ -106,3 +202,4 @@ func test() {
 	}
 	fmt.Printf("%+v\n", config)
 }
+*/

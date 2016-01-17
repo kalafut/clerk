@@ -50,15 +50,13 @@ func balanceReport(tranactions []ledger.Transaction) string {
 func traverse(acct *ledger.Account, balances MultiBalance) string {
 	var result string
 
-	for commodity, value := range balances[acct] {
-		var valstr string
-		if commodity.Postfix {
-			valstr = value.FloatString(2) + " " + commodity.Abbr
-		} else {
-			valstr = commodity.Abbr + " " + value.FloatString(2)
-		}
-		fmt.Fprintf(w, "%s%v\t%v\n", strings.Repeat(" ", 2*(acct.Level()-1)), acct.Name, valstr)
+	//for commodity, value := range balances[acct] {
+	valstrs := balances[acct].Strings()
+
+	for _, str := range valstrs {
+		fmt.Fprintf(w, "%s%s\t%s\n", strings.Repeat(" ", 2*(acct.Level()-1)), acct.Name, str)
 	}
+	//}
 
 	children := make([]string, 0, len(acct.Children()))
 	for child, _ := range acct.Children() {

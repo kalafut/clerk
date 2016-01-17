@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ledger := ledger.NewLedger(f)
+	ledger := ledger.NewLedgerReader(f)
 	f.Close()
 
 	if *inplace {

@@ -13,9 +13,6 @@ import (
 	"github.com/kalafut/clerk/core"
 )
 
-const multiplier = 100000
-const stdDate = "2006/01/02"
-
 type Posting struct {
 	Account *Account
 	Amount  core.Amount
@@ -39,7 +36,7 @@ func (t Transaction) toCSV() string {
 
 	w := csv.NewWriter(&buf)
 	record := []string{
-		t.Date.Format(stdDate),
+		t.Date.Format(core.StdDate),
 		t.Summary,
 		postings.String(),
 		t.Note,
@@ -76,7 +73,7 @@ func ParseTransactions(in io.Reader) []Transaction {
 			break
 		}
 
-		date, err := time.Parse(stdDate, record[0])
+		date, err := time.Parse(core.StdDate, record[0])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -119,9 +116,9 @@ func parsePostings(p string) []Posting {
 		case c1 != "" && c2 != "":
 			log.Fatalf("Multiple commmodities in posting: %s", posting)
 		case c1 != "":
-			comm = core.Commodity{Abbr: c1} // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
+			comm = core.Commodity(c1) // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
 		case c2 != "":
-			comm = core.Commodity{Abbr: c2, Postfix: true}
+			comm = core.Commodity(c2)
 		default:
 			comm = core.DefaultCommodity
 		}
@@ -129,7 +126,7 @@ func parsePostings(p string) []Posting {
 		r := new(big.Rat)
 		r.SetString(result["amount"])
 		p := Posting{
-			Account: RootAccount.findOrAddAccount(result["account"]),
+			Account: RootAccount.FindOrAddAccount(result["account"]),
 			Amount:  core.NewAmount(result["amount"], comm),
 		}
 

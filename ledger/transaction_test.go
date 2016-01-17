@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kalafut/clerk/core"
+
 	"gopkg.in/tylerb/is.v1"
 )
 
@@ -73,7 +75,7 @@ func TestParse(test *testing.T) {
 }
 
 func date(s string) time.Time {
-	date, err := time.Parse(stdDate, s)
+	date, err := time.Parse(core.StdDate, s)
 	if err != nil {
 		log.Fatal(err)
 	}

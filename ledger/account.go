@@ -47,7 +47,7 @@ func (acct *Account) Level() int {
 
 	return level
 }
-func (acct *Account) findOrAddAccount(acctName string) *Account {
+func (acct *Account) FindOrAddAccount(acctName string) *Account {
 	var child *Account
 	var name string
 	var ok bool
@@ -69,7 +69,7 @@ func (acct *Account) findOrAddAccount(acctName string) *Account {
 	}
 
 	if idx != -1 {
-		child = child.findOrAddAccount(acctName[idx+1:])
+		child = child.FindOrAddAccount(acctName[idx+1:])
 	}
 
 	return child

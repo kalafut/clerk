@@ -1,5 +1,6 @@
-package main
+package io
 
+/*
 import (
 	"fmt"
 
@@ -62,3 +63,4 @@ func Import(ledgerFile, importFile string) {
 	_ = ledger
 	test()
 }
+*/
