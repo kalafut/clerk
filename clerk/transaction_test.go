@@ -1,4 +1,4 @@
-package ledger
+package clerk
 
 import (
 	"bytes"
@@ -6,8 +6,6 @@ import (
 	"log"
 	"testing"
 	"time"
-
-	"github.com/kalafut/clerk/core"
 
 	"gopkg.in/tylerb/is.v1"
 )
@@ -56,7 +54,7 @@ func TestTransaction(test *testing.T) {
 }
 */
 
-func TestParse(test *testing.T) {
+func TestParse2(test *testing.T) {
 	is := is.New(test)
 
 	p := parsePostings("  Assets:Checking   AAPL 50.00 &  Credit  -34.24  ")
@@ -74,8 +72,8 @@ func TestParse(test *testing.T) {
 	is.Equal(date("2015/12/31"), transactions[1].Date)
 }
 
-func date(s string) time.Time {
-	date, err := time.Parse(core.StdDate, s)
+func date2(s string) time.Time {
+	date, err := time.Parse(StdDate, s)
 	if err != nil {
 		log.Fatal(err)
 	}

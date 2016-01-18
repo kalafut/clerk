@@ -1,4 +1,4 @@
-package ledger
+package clerk
 
 import (
 	"bytes"
@@ -6,16 +6,13 @@ import (
 	"io"
 	"log"
 	"math/big"
-	"regexp"
 	"strings"
 	"time"
-
-	"github.com/kalafut/clerk/core"
 )
 
 type Posting struct {
 	Account *Account
-	Amount  core.Amount
+	Amount  Amount
 }
 
 type Transaction struct {
@@ -36,7 +33,7 @@ func (t Transaction) toCSV() string {
 
 	w := csv.NewWriter(&buf)
 	record := []string{
-		t.Date.Format(core.StdDate),
+		t.Date.Format(StdDate),
 		t.Summary,
 		postings.String(),
 		t.Note,
@@ -73,7 +70,7 @@ func ParseTransactions(in io.Reader) []Transaction {
 			break
 		}
 
-		date, err := time.Parse(core.StdDate, record[0])
+		date, err := time.Parse(StdDate, record[0])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -89,10 +86,8 @@ func ParseTransactions(in io.Reader) []Transaction {
 	return trans
 }
 
-var rePosting2 = regexp.MustCompile(`^(?P<account>.*?)\s{2,}(?P<comm1>[^-.0-9]*?)\s?(?P<amount>-?[.0-9]+)\s?(?P<comm2>[^-.0-9]*)$`)
-
 func parsePostings(p string) []Posting {
-	var comm core.Commodity
+	var comm Commodity
 	postings := []Posting{}
 
 	for _, posting := range strings.Split(p, "&") {
@@ -116,18 +111,18 @@ func parsePostings(p string) []Posting {
 		case c1 != "" && c2 != "":
 			log.Fatalf("Multiple commmodities in posting: %s", posting)
 		case c1 != "":
-			comm = core.Commodity(c1) // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
+			comm = Commodity(c1) // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
 		case c2 != "":
-			comm = core.Commodity(c2)
+			comm = Commodity(c2)
 		default:
-			comm = core.DefaultCommodity
+			comm = DefaultCommodity
 		}
 
 		r := new(big.Rat)
 		r.SetString(result["amount"])
 		p := Posting{
 			Account: RootAccount.FindOrAddAccount(result["account"]),
-			Amount:  core.NewAmount(result["amount"], comm),
+			Amount:  NewAmount(result["amount"], comm),
 		}
 
 		postings = append(postings, p)
@@ -137,7 +132,7 @@ func parsePostings(p string) []Posting {
 }
 
 func checkBalance(postings []Posting) bool {
-	sum := core.Amount{}
+	sum := Amount{}
 
 	for _, p := range postings {
 		sum.Add(p.Amount)

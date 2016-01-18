@@ -7,21 +7,20 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/kalafut/clerk/core"
-	"github.com/kalafut/clerk/ledger"
+	"github.com/kalafut/clerk/clerk"
 )
 
-type MultiBalance map[*ledger.Account]core.Amount
+type MultiBalance map[*clerk.Account]clerk.Amount
 
-func (m MultiBalance) Add(acct *ledger.Account, amt core.Amount) {
+func (m MultiBalance) Add(acct *clerk.Account, amt clerk.Amount) {
 	if m[acct] == nil {
-		m[acct] = core.Amount{}
+		m[acct] = clerk.Amount{}
 	}
 
 	m[acct].Add(amt)
 }
 
-func (m MultiBalance) AddUp(acct *ledger.Account, amt core.Amount) {
+func (m MultiBalance) AddUp(acct *clerk.Account, amt clerk.Amount) {
 	m.Add(acct, amt)
 
 	if acct.Parent().Parent() != nil {
@@ -31,7 +30,7 @@ func (m MultiBalance) AddUp(acct *ledger.Account, amt core.Amount) {
 
 var w = new(tabwriter.Writer)
 
-func balanceReport(tranactions []ledger.Transaction) string {
+func balanceReport(tranactions []clerk.Transaction) string {
 	var b bytes.Buffer
 	w.Init(&b, 0, 0, 1, ' ', 0)
 	balances := MultiBalance{}
@@ -42,12 +41,12 @@ func balanceReport(tranactions []ledger.Transaction) string {
 		}
 	}
 
-	traverse(ledger.RootAccount, balances)
+	traverse(clerk.RootAccount, balances)
 	w.Flush()
 	return b.String()
 }
 
-func traverse(acct *ledger.Account, balances MultiBalance) string {
+func traverse(acct *clerk.Account, balances MultiBalance) string {
 	var result string
 
 	//for commodity, value := range balances[acct] {

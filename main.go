@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/kalafut/clerk/ledger"
+	"github.com/kalafut/clerk/clerk"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -16,8 +16,8 @@ import (
 //"Account","Flag","Check Number","Date","Payee","Category","Master Category","Sub Category","Memo","Outflow","Inflow","Cleared","Running Balance"
 
 var (
-	app        = kingpin.New("clerk", "Ledger Helper")
-	ledgerFile = app.Flag("filename", "Ledger filename").Short('f').Default("master.dat").String()
+	app        = kingpin.New("clerk", "clerk Helper")
+	ledgerFile = app.Flag("filename", "clerk filename").Short('f').Default("master.dat").String()
 	importFile = app.Flag("csv", "CSV filename").String()
 	inplace    = app.Flag("inplace", "Edit file in place").Short('i').Bool()
 	outfile    = app.Flag("outfile", "Output file").Short('o').String()
@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ledger := ledger.NewLedgerReader(f)
+	ledger := clerk.NewLedgerReader(f)
 	f.Close()
 
 	if *inplace {
@@ -56,8 +56,9 @@ func main() {
 
 	switch cmd {
 	case sortCmd.FullCommand():
-		ledger.Sort()
-		ledger.Export(output)
+		//clerk.Sort()
+		//clerk.Export(output)
+		_ = ledger
 	case dedupeCmd.FullCommand():
 		//FindDupes(ledger)
 	case importCmd.FullCommand():
