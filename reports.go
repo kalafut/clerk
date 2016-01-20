@@ -6,21 +6,19 @@ import (
 	"sort"
 	"strings"
 	"text/tabwriter"
-
-	"github.com/kalafut/clerk/clerk"
 )
 
-type MultiBalance map[*clerk.Account]clerk.Amount
+type MultiBalance map[*Account]Amount
 
-func (m MultiBalance) Add(acct *clerk.Account, amt clerk.Amount) {
+func (m MultiBalance) Add(acct *Account, amt Amount) {
 	if m[acct] == nil {
-		m[acct] = clerk.Amount{}
+		m[acct] = Amount{}
 	}
 
 	m[acct].Add(amt)
 }
 
-func (m MultiBalance) AddUp(acct *clerk.Account, amt clerk.Amount) {
+func (m MultiBalance) AddUp(acct *Account, amt Amount) {
 	m.Add(acct, amt)
 
 	if acct.Parent().Parent() != nil {
@@ -30,7 +28,7 @@ func (m MultiBalance) AddUp(acct *clerk.Account, amt clerk.Amount) {
 
 var w = new(tabwriter.Writer)
 
-func balanceReport(tranactions []clerk.Transaction) string {
+func balanceReport(tranactions []Transaction) string {
 	var b bytes.Buffer
 	w.Init(&b, 0, 0, 1, ' ', 0)
 	balances := MultiBalance{}
@@ -41,12 +39,12 @@ func balanceReport(tranactions []clerk.Transaction) string {
 		}
 	}
 
-	traverse(clerk.RootAccount, balances)
+	traverse(RootAccount, balances)
 	w.Flush()
 	return b.String()
 }
 
-func traverse(acct *clerk.Account, balances MultiBalance) string {
+func traverse(acct *Account, balances MultiBalance) string {
 	var result string
 
 	//for commodity, value := range balances[acct] {

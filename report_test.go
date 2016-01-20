@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kalafut/clerk/clerk"
 	"github.com/kalafut/is"
 )
 
@@ -16,7 +15,7 @@ func TestBalance(test *testing.T) {
 
 	input, _ := ioutil.ReadFile("test_data/test2.csv")
 	r := bytes.NewReader(input)
-	transactions := clerk.ParseTransactions(r)
+	transactions := ParseTransactions(r)
 	fmt.Print(balanceReport(transactions))
 
 	//fmt.Println(transactions)

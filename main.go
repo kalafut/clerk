@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/kalafut/clerk/clerk"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -36,7 +34,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ledger := clerk.NewLedgerReader(f)
+	ledger := NewLedgerReader(f)
 	f.Close()
 
 	if *inplace {
@@ -56,8 +54,8 @@ func main() {
 
 	switch cmd {
 	case sortCmd.FullCommand():
-		//clerk.Sort()
-		//clerk.Export(output)
+		//Sort()
+		//Export(output)
 		_ = ledger
 	case dedupeCmd.FullCommand():
 		//FindDupes(ledger)
