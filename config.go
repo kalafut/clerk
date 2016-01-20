@@ -13,7 +13,8 @@ const configFilename = "config"
 var config Config
 
 type Config struct {
-	Settings struct {
+	inputFile string
+	Settings  struct {
 		TranscactionSpacing int
 	}
 }
