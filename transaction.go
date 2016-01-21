@@ -16,6 +16,8 @@ type Posting struct {
 }
 
 type Transaction struct {
+	id int
+
 	Date     time.Time
 	Summary  string
 	Postings []Posting

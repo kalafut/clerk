@@ -46,3 +46,15 @@ func (l Ledger) Export(w io.Writer) {
 		fmt.Fprint(w, t.toCSV())
 	}
 }
+
+func (ldg *Ledger) Add(t Transaction) {
+	ldg.transactions = append(ldg.transactions, t)
+}
+
+func (ldg *Ledger) Del(t Transaction) {
+	for _, v := range ldg.transactions {
+		if v.id == t.id {
+
+		}
+	}
+}
