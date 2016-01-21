@@ -27,14 +27,14 @@ func TestParse(test *testing.T) {
 
 	is.Equal(3, len(transactions))
 
-	is.Equal(date("2015/12/31"), transactions[0].Date)
-	is.Equal("Payee or summary", transactions[0].Summary)
-	is.Equal("D", transactions[0].Postings[0].Account.Name)
-	is.Equal(NewAmount("200", "$"), transactions[0].Postings[0].Amount)
+	is.Equal(date("2015/12/31"), transactions[0].Date())
+	is.Equal("Payee or summary", transactions[0].Summary())
+	is.Equal("D", transactions[0].Postings()[0].Account.Name)
+	is.Equal(NewAmount("200", "$"), transactions[0].Postings()[0].Amount)
 	//is.Equal(, transactions[0].Postings[0].Account.Name)
 
-	is.Equal(date("2016/01/16"), transactions[2].Date)
-	is.Equal("Stock purchase", transactions[2].Summary)
+	is.Equal(date("2016/01/16"), transactions[2].Date())
+	is.Equal("Stock purchase", transactions[2].Summary())
 }
 
 func date(s string) time.Time {

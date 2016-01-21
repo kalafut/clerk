@@ -15,28 +15,68 @@ type Posting struct {
 	Amount  Amount
 }
 
+// Transaction store all data for a transaction. It should be treated as immutable. Use Set*()
+// function to receive a new, modified Transaction.
 type Transaction struct {
-	Date     time.Time
-	Summary  string
-	Postings []Posting
-	Note     string
+	date     time.Time
+	summary  string
+	postings []Posting
+	note     string
+}
+
+func NewTransaction(date time.Time, summary string, postings []Posting, note string) *Transaction {
+	t := Transaction{
+		date:    date,
+		summary: summary,
+		note:    note,
+	}
+	t.postings = make([]Posting, len(postings))
+	copy(t.postings, postings)
+
+	return &t
+}
+
+func (t Transaction) Date() time.Time {
+	return t.date
+}
+func (t Transaction) Summary() string {
+	return t.summary
+}
+func (t Transaction) Postings() []Posting {
+	return t.postings
+}
+func (t Transaction) Note() string {
+	return t.note
+}
+
+func (t Transaction) SetDate(date time.Time) *Transaction {
+	return NewTransaction(date, t.summary, t.postings, t.note)
+}
+func (t Transaction) SetSummary(summary string) *Transaction {
+	return NewTransaction(t.date, summary, t.postings, t.note)
+}
+func (t Transaction) SetPostings(postings []Posting) *Transaction {
+	return NewTransaction(t.date, t.summary, postings, t.note)
+}
+func (t Transaction) SetNote(note string) *Transaction {
+	return NewTransaction(t.date, t.summary, t.postings, note)
 }
 
 func (t Transaction) toCSV() string {
 	var buf bytes.Buffer
 	var postings bytes.Buffer
 
-	for _, p := range t.Postings {
+	for _, p := range t.postings {
 		postings.WriteString(p.Account.Name)
 		postings.WriteString("  &  ")
 	}
 
 	w := csv.NewWriter(&buf)
 	record := []string{
-		t.Date.Format(StdDate),
-		t.Summary,
+		t.date.Format(StdDate),
+		t.summary,
 		postings.String(),
-		t.Note,
+		t.note,
 	}
 
 	w.Write(record)
@@ -75,12 +115,13 @@ func ParseTransactions(in io.Reader) []*Transaction {
 			log.Fatal(err)
 		}
 
-		t := Transaction{
-			Date:     date,
-			Summary:  strings.TrimSpace(record[1]),
-			Postings: parsePostings(record[2]),
-		}
-		trans = append(trans, &t)
+		t := NewTransaction(
+			date,
+			strings.TrimSpace(record[1]),
+			parsePostings(record[2]),
+			"",
+		)
+		trans = append(trans, t)
 	}
 
 	return trans

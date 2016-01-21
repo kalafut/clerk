@@ -34,7 +34,7 @@ func balanceReport(transactions []*Transaction) string {
 	balances := MultiBalance{}
 
 	for _, t := range transactions {
-		for _, p := range t.Postings {
+		for _, p := range t.Postings() {
 			balances.AddUp(p.Account, p.Amount)
 		}
 	}

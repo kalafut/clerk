@@ -34,12 +34,13 @@ func (r CSVTxReader) Read(root *Account) []*Transaction {
 			log.Fatal(err)
 		}
 
-		t := Transaction{
-			Date:     date,
-			Summary:  strings.TrimSpace(record[1]),
-			Postings: parsePostings2(root, record[2]),
-		}
-		trans = append(trans, &t)
+		t := NewTransaction(
+			date,
+			strings.TrimSpace(record[1]),
+			parsePostings2(root, record[2]),
+			"",
+		)
+		trans = append(trans, t)
 	}
 
 	return trans
