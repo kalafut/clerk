@@ -2,18 +2,24 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/big"
+	"strconv"
 )
+
+const DefaultCommodity = "$"
+const StdDate = "2006/01/02"
 
 // Amounts are full precision (rational) values of one or more commodities, e.g. ($4, 34 AAPL). Though most
 // quantities in ledgers deal in a single commodity, is it simpler for any Amount to consist of multiple
 // commodities. Some support functions assume a single commodity and will complain otherwise.
 type Amount map[string]*big.Rat
 
-const DefaultCommodity = "$"
-const StdDate = "2006/01/02"
-
 func NewAmount(qty string, cmdty string) Amount {
+	if _, err := strconv.ParseFloat(qty, 64); err != nil {
+		log.Fatalf("Invalid Amount(qty: %s  cmdty: %s)", qty, cmdty)
+	}
+
 	r := new(big.Rat)
 	r.SetString(qty)
 
