@@ -28,7 +28,7 @@ func (m MultiBalance) AddUp(acct *Account, amt Amount) {
 
 var w = new(tabwriter.Writer)
 
-func balanceReport(transactions []Transaction) string {
+func balanceReport(transactions []*Transaction) string {
 	var b bytes.Buffer
 	w.Init(&b, 0, 0, 1, ' ', 0)
 	balances := MultiBalance{}
@@ -50,8 +50,14 @@ func traverse(acct *Account, balances MultiBalance) string {
 	//for commodity, value := range balances[acct] {
 	valstrs := balances[acct].Strings()
 
-	for _, str := range valstrs {
-		fmt.Fprintf(w, "%s%s\t%s\n", strings.Repeat(" ", 2*(acct.Level()-1)), acct.Name, str)
+	commodities := []string{}
+	for c, _ := range valstrs {
+		commodities = append(commodities, string(c))
+	}
+	sort.Strings(commodities)
+
+	for _, c := range commodities {
+		fmt.Fprintf(w, "%s%s\t%s\n", strings.Repeat(" ", 2*(acct.Level()-1)), acct.Name, valstrs[Commodity(c)])
 	}
 	//}
 

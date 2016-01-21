@@ -3,38 +3,40 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
-	"os"
 )
 
 // Ledger is the highest level container, containing transactions and all related
 // accounts and commodities.
 type Ledger struct {
 	rootAccount  *Account
-	transactions []Transaction
+	transactions []*Transaction
 }
 
-func NewLedger(data io.Reader) Ledger {
+type TxnReader interface {
+	Read(root *Account) []*Transaction
+}
+
+func NewLedger() Ledger {
 	return Ledger{
 		rootAccount:  NewRootAccount(),
-		transactions: []Transaction{},
+		transactions: []*Transaction{},
 	}
 }
 
-func NewLedgerReader(data io.Reader) Ledger {
-	transactions := ParseTransactions(data)
-	return Ledger{
-		transactions: transactions,
-	}
+func (ldg *Ledger) All() []*Transaction {
+	txn := make([]*Transaction, len(ldg.transactions))
+	copy(txn, ldg.transactions)
+	return txn
 }
 
-func NewLedgerFromFile(filename string) Ledger {
-	f, err := os.Open(filename)
-	defer f.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return NewLedgerReader(f)
+// Load populates the Ledger transaction log with the values from the TxnReader.
+// The existing transaction log is replaced, so this function is typically used
+// to an intialize a Ledger.
+func (ldg *Ledger) Load(r TxnReader) {
+	txn := r.Read(ldg.rootAccount)
+	ldg.transactions = make([]*Transaction, len(txn))
+	copy(ldg.transactions, txn)
+	//sort
 }
 
 func (l *Ledger) Sort() {
@@ -47,11 +49,11 @@ func (l Ledger) Export(w io.Writer) {
 	}
 }
 
-func (ldg *Ledger) Add(t Transaction) {
+func (ldg *Ledger) Add(t *Transaction) {
 	ldg.transactions = append(ldg.transactions, t)
 }
 
-func (ldg *Ledger) Del(t Transaction) {
+func (ldg *Ledger) Del(t *Transaction) {
 	for _, v := range ldg.transactions {
 		if v.id == t.id {
 

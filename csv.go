@@ -21,8 +21,8 @@ func NewCSVTxReader(r io.Reader) CSVTxReader {
 	}
 }
 
-func (r CSVTxReader) Read(root *Account) []Transaction {
-	trans := []Transaction{}
+func (r CSVTxReader) Read(root *Account) []*Transaction {
+	trans := []*Transaction{}
 
 	for {
 		record, err := r.reader.Read()
@@ -40,7 +40,7 @@ func (r CSVTxReader) Read(root *Account) []Transaction {
 			Summary:  strings.TrimSpace(record[1]),
 			Postings: parsePostings2(root, record[2]),
 		}
-		trans = append(trans, t)
+		trans = append(trans, &t)
 	}
 
 	return trans

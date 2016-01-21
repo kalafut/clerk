@@ -62,8 +62,8 @@ func (t Transaction) toCSV() string {
 //	return true
 //}
 
-func ParseTransactions(in io.Reader) []Transaction {
-	trans := []Transaction{}
+func ParseTransactions(in io.Reader) []*Transaction {
+	trans := []*Transaction{}
 	r := csv.NewReader(in)
 
 	for {
@@ -82,7 +82,7 @@ func ParseTransactions(in io.Reader) []Transaction {
 			Summary:  strings.TrimSpace(record[1]),
 			Postings: parsePostings(record[2]),
 		}
-		trans = append(trans, t)
+		trans = append(trans, &t)
 	}
 
 	return trans

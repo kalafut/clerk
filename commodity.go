@@ -46,14 +46,14 @@ func (amt Amount) Zero() bool {
 	return true
 }
 
-func (amt Amount) Strings() []string {
-	strs := []string{}
+func (amt Amount) Strings() map[Commodity]string {
+	strs := map[Commodity]string{}
 
 	for com, val := range amt {
 		if com == "$" { // hack
-			strs = append(strs, fmt.Sprintf("%s %s", com, val.FloatString(2)))
+			strs[com] = fmt.Sprintf("%s %s", com, val.FloatString(2))
 		} else {
-			strs = append(strs, fmt.Sprintf("%s %s", val.FloatString(2), com))
+			strs[com] = fmt.Sprintf("%s %s", val.FloatString(2), com)
 		}
 	}
 

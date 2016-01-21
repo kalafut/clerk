@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -10,7 +11,14 @@ import (
 func TestImportExport(test *testing.T) {
 	is := is.New(test)
 
-	ledger := NewLedgerFromFile("test_data/test1.csv")
+	f, err := os.Open("test_data/test1.csv")
+	defer f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ledger := NewLedger()
+
 	ledger.Export(os.Stdout)
 
 	_ = is
