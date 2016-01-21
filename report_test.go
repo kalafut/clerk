@@ -17,7 +17,7 @@ func TestBalance(test *testing.T) {
 	transactions := ParseTransactions(r)
 	//fmt.Print(balanceReport(transactions))
 
-	rpt_lines := strings.Split(balanceReport(transactions), "\n")
-	is.Equal(rpt_lines[0], "A                  $ 200.00")
-	is.Equal(rpt_lines[9], "ETrade             34.00 AAPL")
+	rptLines := strings.Split(balanceReport(transactions), "\n")
+	is.Equal(rptLines[0], "A                  $ 200.00")
+	is.Equal(rptLines[9], "ETrade             34.00 AAPL")
 }

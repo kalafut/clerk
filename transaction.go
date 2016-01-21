@@ -89,7 +89,7 @@ func ParseTransactions(in io.Reader) []*Transaction {
 }
 
 func parsePostings(p string) []Posting {
-	var comm Commodity
+	var comm string
 	postings := []Posting{}
 
 	for _, posting := range strings.Split(p, "&") {
@@ -113,9 +113,9 @@ func parsePostings(p string) []Posting {
 		case c1 != "" && c2 != "":
 			log.Fatalf("Multiple commmodities in posting: %s", posting)
 		case c1 != "":
-			comm = Commodity(c1) // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
+			comm = c1 // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
 		case c2 != "":
-			comm = Commodity(c2)
+			comm = c2
 		default:
 			comm = DefaultCommodity
 		}

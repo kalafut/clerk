@@ -5,17 +5,15 @@ import (
 	"math/big"
 )
 
-type Commodity string
-
 // Amounts are full precision (rational) values of one or more commodities, e.g. ($4, 34 AAPL). Though most
 // quantities in ledgers deal in a single commodity, is it simpler for any Amount to consist of multiple
 // commodities. Some support functions assume a single commodity and will complain otherwise.
-type Amount map[Commodity]*big.Rat
+type Amount map[string]*big.Rat
 
-const DefaultCommodity = Commodity("$")
+const DefaultCommodity = "$"
 const StdDate = "2006/01/02"
 
-func NewAmount(qty string, cmdty Commodity) Amount {
+func NewAmount(qty string, cmdty string) Amount {
 	r := new(big.Rat)
 	r.SetString(qty)
 
@@ -46,8 +44,8 @@ func (amt Amount) Zero() bool {
 	return true
 }
 
-func (amt Amount) Strings() map[Commodity]string {
-	strs := map[Commodity]string{}
+func (amt Amount) Strings() map[string]string {
+	strs := map[string]string{}
 
 	for com, val := range amt {
 		if com == "$" { // hack

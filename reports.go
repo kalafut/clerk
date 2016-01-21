@@ -47,22 +47,20 @@ func balanceReport(transactions []*Transaction) string {
 func traverse(acct *Account, balances MultiBalance) string {
 	var result string
 
-	//for commodity, value := range balances[acct] {
 	valstrs := balances[acct].Strings()
 
 	commodities := []string{}
-	for c, _ := range valstrs {
-		commodities = append(commodities, string(c))
+	for c := range valstrs {
+		commodities = append(commodities, c)
 	}
 	sort.Strings(commodities)
 
 	for _, c := range commodities {
-		fmt.Fprintf(w, "%s%s\t%s\n", strings.Repeat(" ", 2*(acct.Level()-1)), acct.Name, valstrs[Commodity(c)])
+		fmt.Fprintf(w, "%s%s\t%s\n", strings.Repeat(" ", 2*(acct.Level()-1)), acct.Name, valstrs[c])
 	}
-	//}
 
 	children := make([]string, 0, len(acct.Children()))
-	for child, _ := range acct.Children() {
+	for child := range acct.Children() {
 		children = append(children, child)
 	}
 

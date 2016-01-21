@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// sdf
 type CSVTxReader struct {
 	reader *csv.Reader
 }
@@ -49,7 +48,7 @@ func (r CSVTxReader) Read(root *Account) []*Transaction {
 var rePosting2 = regexp.MustCompile(`^(?P<account>.*?)\s{2,}(?P<comm1>[^-.0-9]*?)\s?(?P<amount>-?[.0-9]+)\s?(?P<comm2>[^-.0-9]*)$`)
 
 func parsePostings2(root *Account, p string) []Posting {
-	var comm Commodity
+	var comm string
 	postings := []Posting{}
 
 	for _, posting := range strings.Split(p, "&") {
@@ -73,9 +72,9 @@ func parsePostings2(root *Account, p string) []Posting {
 		case c1 != "" && c2 != "":
 			log.Fatalf("Multiple commmodities in posting: %s", posting)
 		case c1 != "":
-			comm = Commodity(c1) // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
+			comm = c1 // TODO: use a commodity pool instead, else "$ 1" is different than "1 $"
 		case c2 != "":
-			comm = Commodity(c2)
+			comm = c2
 		default:
 			comm = DefaultCommodity
 		}
