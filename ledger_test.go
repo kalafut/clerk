@@ -15,7 +15,7 @@ var (
 )
 
 func TestLedgerAdd(test *testing.T) {
-	var all []*Transaction
+	var all []*Tx
 
 	is := is.New(test)
 
@@ -43,7 +43,7 @@ func TestLedgerAdd(test *testing.T) {
 }
 
 func TestLedgerDel(test *testing.T) {
-	var all []*Transaction
+	var all []*Tx
 
 	is := is.New(test)
 
@@ -73,7 +73,7 @@ func TestLedgerDel(test *testing.T) {
 }
 
 func TestLedgerReplace(test *testing.T) {
-	var all []*Transaction
+	var all []*Tx
 	is := is.New(test)
 
 	ldg := NewLedger()

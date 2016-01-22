@@ -9,54 +9,50 @@ import (
 // Ledger is the highest level container, containing transactions and all related
 // accounts and commodities.
 type Ledger struct {
-	rootAccount  *Account
-	transactions []*Transaction
-}
-
-type TxnReader interface {
-	Read(root *Account) []*Transaction
+	rootAcct *Account
+	txs      []*Tx
 }
 
 func NewLedger() Ledger {
 	return Ledger{
-		rootAccount:  NewRootAccount(),
-		transactions: []*Transaction{},
+		rootAcct: NewRootAccount(),
+		txs:      []*Tx{},
 	}
 }
 
-func (ldg *Ledger) All() []*Transaction {
-	txn := make([]*Transaction, len(ldg.transactions))
-	copy(txn, ldg.transactions)
+func (ldg *Ledger) All() []*Tx {
+	txn := make([]*Tx, len(ldg.txs))
+	copy(txn, ldg.txs)
 	return txn
 }
 
 // Load populates the Ledger transaction log with the values from the TxnReader.
 // The existing transaction log is replaced, so this function is typically used
 // to an intialize a Ledger.
-func (ldg *Ledger) Load(r TxnReader) {
-	txn := r.Read(ldg.rootAccount)
-	ldg.transactions = make([]*Transaction, len(txn))
-	copy(ldg.transactions, txn)
+func (ldg *Ledger) Load(r TxReader) {
+	txn := r.Read(ldg.rootAcct)
+	ldg.txs = make([]*Tx, len(txn))
+	copy(ldg.txs, txn)
 	ldg.sort()
 }
 
 func (ldg Ledger) Export(w io.Writer) {
-	for _, t := range ldg.transactions {
+	for _, t := range ldg.txs {
 		fmt.Fprint(w, t.toCSV())
 	}
 }
 
-func (ldg *Ledger) Add(t *Transaction) {
-	ldg.transactions = append(ldg.transactions, t)
+func (ldg *Ledger) Add(t *Tx) {
+	ldg.txs = append(ldg.txs, t)
 	ldg.sort()
 }
 
-func (ldg *Ledger) Del(t *Transaction) bool {
-	a := ldg.transactions
-	for i, v := range ldg.transactions {
+func (ldg *Ledger) Del(t *Tx) bool {
+	a := ldg.txs
+	for i, v := range ldg.txs {
 		if v == t {
 			a, a[len(a)-1] = append(a[:i], a[i+1:]...), nil
-			ldg.transactions = a
+			ldg.txs = a
 			return true
 		}
 	}
@@ -64,7 +60,7 @@ func (ldg *Ledger) Del(t *Transaction) bool {
 	return false
 }
 
-func (ldg *Ledger) Replace(dst, src *Transaction) bool {
+func (ldg *Ledger) Replace(dst, src *Tx) bool {
 	if ldg.Del(dst) {
 		ldg.Add(src)
 		return true
@@ -75,7 +71,7 @@ func (ldg *Ledger) Replace(dst, src *Transaction) bool {
 
 // Sorting support
 
-type byDate []*Transaction
+type byDate []*Tx
 
 func (a byDate) Len() int      { return len(a) }
 func (a byDate) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
@@ -90,5 +86,5 @@ func (a byDate) Less(i, j int) bool {
 }
 
 func (ldg *Ledger) sort() {
-	sort.Sort(byDate(ldg.transactions))
+	sort.Sort(byDate(ldg.txs))
 }

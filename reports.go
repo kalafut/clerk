@@ -28,14 +28,14 @@ func (m MultiBalance) AddUp(acct *Account, amt Amount) {
 
 var w = new(tabwriter.Writer)
 
-func balanceReport(transactions []*Transaction) string {
+func balanceReport(transactions []*Tx) string {
 	var b bytes.Buffer
 	w.Init(&b, 0, 0, 1, ' ', 0)
 	balances := MultiBalance{}
 
 	for _, t := range transactions {
 		for _, p := range t.Postings() {
-			balances.AddUp(p.Account, p.Amount)
+			balances.AddUp(p.Acct, p.Amt)
 		}
 	}
 

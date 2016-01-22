@@ -28,8 +28,8 @@ func TestTransactionCreation(test *testing.T) {
 		note,
 	)
 
-	t2 := new(Transaction).SetDate(date).SetSummary(summary).SetPostings(postings).SetNote(note)
-	t3 := new(Transaction).SetDate(date).SetSummary(summary).SetPostings(postings).SetNote(note + " ")
+	t2 := new(Tx).SetDate(date).SetSummary(summary).SetPostings(postings).SetNote(note)
+	t3 := new(Tx).SetDate(date).SetSummary(summary).SetPostings(postings).SetNote(note + " ")
 
 	is.Equal(t1, t2)
 	is.NotEqual(t1, t3)

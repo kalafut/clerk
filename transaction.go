@@ -11,21 +11,25 @@ import (
 )
 
 type Posting struct {
-	Account *Account
-	Amount  Amount
+	Acct *Account
+	Amt  Amount
 }
 
 // Transaction store all data for a transaction. It should be treated as immutable. Use Set*()
 // function to receive a new, modified Transaction.
-type Transaction struct {
+type Tx struct {
 	date     time.Time
 	summary  string
 	postings []Posting
 	note     string
 }
 
-func NewTransaction(date time.Time, summary string, postings []Posting, note string) *Transaction {
-	t := Transaction{
+type TxReader interface {
+	Read(root *Account) []*Tx
+}
+
+func NewTransaction(date time.Time, summary string, postings []Posting, note string) *Tx {
+	t := Tx{
 		date:    date,
 		summary: summary,
 		note:    note,
@@ -36,38 +40,38 @@ func NewTransaction(date time.Time, summary string, postings []Posting, note str
 	return &t
 }
 
-func (t Transaction) Date() time.Time {
+func (t Tx) Date() time.Time {
 	return t.date
 }
-func (t Transaction) Summary() string {
+func (t Tx) Summary() string {
 	return t.summary
 }
-func (t Transaction) Postings() []Posting {
+func (t Tx) Postings() []Posting {
 	return t.postings
 }
-func (t Transaction) Note() string {
+func (t Tx) Note() string {
 	return t.note
 }
 
-func (t Transaction) SetDate(date time.Time) *Transaction {
+func (t Tx) SetDate(date time.Time) *Tx {
 	return NewTransaction(date, t.summary, t.postings, t.note)
 }
-func (t Transaction) SetSummary(summary string) *Transaction {
+func (t Tx) SetSummary(summary string) *Tx {
 	return NewTransaction(t.date, summary, t.postings, t.note)
 }
-func (t Transaction) SetPostings(postings []Posting) *Transaction {
+func (t Tx) SetPostings(postings []Posting) *Tx {
 	return NewTransaction(t.date, t.summary, postings, t.note)
 }
-func (t Transaction) SetNote(note string) *Transaction {
+func (t Tx) SetNote(note string) *Tx {
 	return NewTransaction(t.date, t.summary, t.postings, note)
 }
 
-func (t Transaction) toCSV() string {
+func (t Tx) toCSV() string {
 	var buf bytes.Buffer
 	var postings bytes.Buffer
 
 	for _, p := range t.postings {
-		postings.WriteString(p.Account.Name)
+		postings.WriteString(p.Acct.Name)
 		postings.WriteString("  &  ")
 	}
 
@@ -100,8 +104,8 @@ func (t Transaction) toCSV() string {
 //	return true
 //}
 
-func ParseTransactions(in io.Reader) []*Transaction {
-	trans := []*Transaction{}
+func ParseTransactions(in io.Reader) []*Tx {
+	trans := []*Tx{}
 	r := csv.NewReader(in)
 
 	for {
@@ -162,8 +166,8 @@ func parsePostings(p string) []Posting {
 		r := new(big.Rat)
 		r.SetString(result["amount"])
 		p := Posting{
-			Account: RootAccount.FindOrAddAccount(result["account"]),
-			Amount:  NewAmount(result["amount"], comm),
+			Acct: RootAccount.FindOrAddAccount(result["account"]),
+			Amt:  NewAmount(result["amount"], comm),
 		}
 
 		postings = append(postings, p)
@@ -176,7 +180,7 @@ func checkBalance(postings []Posting) bool {
 	sum := Amount{}
 
 	for _, p := range postings {
-		sum.Add(p.Amount)
+		sum.Add(p.Amt)
 	}
 
 	if !sum.Zero() {

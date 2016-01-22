@@ -20,8 +20,8 @@ func NewCSVTxReader(r io.Reader) CSVTxReader {
 	}
 }
 
-func (r CSVTxReader) Read(root *Account) []*Transaction {
-	trans := []*Transaction{}
+func (r CSVTxReader) Read(root *Account) []*Tx {
+	trans := []*Tx{}
 
 	for {
 		record, err := r.reader.Read()
@@ -83,8 +83,8 @@ func parsePostings2(root *Account, p string) []Posting {
 		r := new(big.Rat)
 		r.SetString(result["amount"])
 		p := Posting{
-			Account: root.FindOrAddAccount(result["account"]),
-			Amount:  NewAmount(result["amount"], comm),
+			Acct: root.FindOrAddAccount(result["account"]),
+			Amt:  NewAmount(result["amount"], comm),
 		}
 
 		postings = append(postings, p)
