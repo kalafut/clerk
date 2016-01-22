@@ -2,8 +2,16 @@ package main
 
 import (
 	"testing"
+	"time"
 
 	"github.com/kalafut/is"
+)
+
+var (
+	t1 = NewTransaction(time.Unix(200, 0), "AAA", []Posting{}, "")
+	t2 = NewTransaction(time.Unix(100, 0), "ZZZ", []Posting{}, "")
+	t3 = NewTransaction(time.Unix(100, 0), "YYY", []Posting{}, "")
+	t4 = NewTransaction(time.Unix(300, 0), "YYY", []Posting{}, "")
 )
 
 func TestLedgerAdd(test *testing.T) {
@@ -15,17 +23,23 @@ func TestLedgerAdd(test *testing.T) {
 	all = ldg.All()
 	is.Equal(0, len(all))
 
-	t1 := new(Transaction)
 	ldg.Add(t1)
 	all = ldg.All()
 	is.Equal(1, len(all))
 	is.Equal(all[0], t1)
 
-	t2 := new(Transaction)
 	ldg.Add(t2)
 	all = ldg.All()
 	is.Equal(2, len(all))
+	is.Equal(all[0], t2)
+	is.Equal(all[1], t1)
+
+	ldg.Add(t3)
+	all = ldg.All()
+	is.Equal(3, len(all))
+	is.Equal(all[0], t3)
 	is.Equal(all[1], t2)
+	is.Equal(all[2], t1)
 }
 
 func TestLedgerDel(test *testing.T) {
@@ -34,55 +48,48 @@ func TestLedgerDel(test *testing.T) {
 	is := is.New(test)
 
 	ldg := NewLedger()
-	t1 := new(Transaction)
-	t2 := new(Transaction)
 
 	ldg.Add(t1)
 	ldg.Add(t2)
+	ldg.Add(t3)
+	all = ldg.All()
+	is.Equal(3, len(all))
+
+	is.True(ldg.Del(t1))
 	all = ldg.All()
 	is.Equal(2, len(all))
+	is.Equal(all[0], t3)
+	is.Equal(all[1], t2)
 
-	r := ldg.Del(t1)
+	is.False(ldg.Del(t1))
 	all = ldg.All()
-	is.True(r)
-	is.Equal(1, len(all))
-	is.Equal(all[0], t2)
+	is.Equal(2, len(all))
+	is.Equal(all[1], t2)
 
-	r = ldg.Del(t1)
+	is.True(ldg.Del(t2))
+	is.True(ldg.Del(t3))
 	all = ldg.All()
-	is.False(r)
-	is.Equal(1, len(all))
-	is.Equal(all[0], t2)
-
-	r = ldg.Del(t2)
-	all = ldg.All()
-	is.True(r)
 	is.Equal(0, len(all))
 }
 
 func TestLedgerReplace(test *testing.T) {
 	var all []*Transaction
-
 	is := is.New(test)
 
 	ldg := NewLedger()
-	t1 := new(Transaction)
-	t2 := new(Transaction)
-	t3 := new(Transaction)
-	t4 := new(Transaction)
 
 	ldg.Add(t1)
 	ldg.Add(t2)
 
-	r := ldg.Replace(t2, t3)
+	is.True(ldg.Replace(t2, t3))
 	all = ldg.All()
-	is.True(r)
 	is.Equal(2, len(all))
-	is.Equal(all[1], t3)
+	is.Equal(all[0], t3)
+	is.Equal(all[1], t1)
 
-	r = ldg.Replace(t4, t3)
-	is.False(r)
+	is.False(ldg.Replace(t4, t3))
 	all = ldg.All()
 	is.Equal(2, len(all))
-	is.Equal(all[1], t3)
+	is.Equal(all[0], t3)
+	is.Equal(all[1], t1)
 }

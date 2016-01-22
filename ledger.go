@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"sort"
 )
 
 // Ledger is the highest level container, containing transactions and all related
@@ -36,21 +37,18 @@ func (ldg *Ledger) Load(r TxnReader) {
 	txn := r.Read(ldg.rootAccount)
 	ldg.transactions = make([]*Transaction, len(txn))
 	copy(ldg.transactions, txn)
-	//sort
+	ldg.sort()
 }
 
-func (l *Ledger) Sort() {
-	//sort.Sort(ByDate(l.blocks))
-}
-
-func (l Ledger) Export(w io.Writer) {
-	for _, t := range l.transactions {
+func (ldg Ledger) Export(w io.Writer) {
+	for _, t := range ldg.transactions {
 		fmt.Fprint(w, t.toCSV())
 	}
 }
 
 func (ldg *Ledger) Add(t *Transaction) {
 	ldg.transactions = append(ldg.transactions, t)
+	ldg.sort()
 }
 
 func (ldg *Ledger) Del(t *Transaction) bool {
@@ -73,4 +71,24 @@ func (ldg *Ledger) Replace(dst, src *Transaction) bool {
 	}
 
 	return false
+}
+
+// Sorting support
+
+type byDate []*Transaction
+
+func (a byDate) Len() int      { return len(a) }
+func (a byDate) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byDate) Less(i, j int) bool {
+	if a[i].Date().Before(a[j].Date()) {
+		return true
+	}
+	if a[i].Date().Equal(a[j].Date()) && a[i].Summary() < a[j].Summary() {
+		return true
+	}
+	return false
+}
+
+func (ldg *Ledger) sort() {
+	sort.Sort(byDate(ldg.transactions))
 }
