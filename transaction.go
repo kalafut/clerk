@@ -28,6 +28,10 @@ type TxReader interface {
 	Read(root *Account) []*Tx
 }
 
+type TxWriter interface {
+	Write([]*Tx)
+}
+
 func NewTransaction(date time.Time, summary string, postings []Posting, note string) *Tx {
 	t := Tx{
 		date:    date,

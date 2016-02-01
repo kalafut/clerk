@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"io"
 	"log"
@@ -91,6 +92,29 @@ func parsePostings2(root *Account, p string) []Posting {
 	}
 	//checkBalance(postings)
 	return postings
+}
+
+func TxCSV(t *Tx) string {
+	var buf bytes.Buffer
+	var postings bytes.Buffer
+
+	for _, p := range t.postings {
+		postings.WriteString(p.Acct.Name)
+		postings.WriteString("  &  ")
+	}
+
+	w := csv.NewWriter(&buf)
+	record := []string{
+		t.date.Format(StdDate),
+		t.summary,
+		postings.String(),
+		t.note,
+	}
+
+	w.Write(record)
+	w.Flush()
+
+	return buf.String()
 }
 
 /*
