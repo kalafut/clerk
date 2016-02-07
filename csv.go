@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"math/big"
@@ -22,23 +24,31 @@ func NewCSVTxReader(r io.Reader) CSVTxReader {
 }
 
 func (r CSVTxReader) Read(root *Account) []*Tx {
+	var line int
+	var postings []Posting
+	var date time.Time
+
 	trans := []*Tx{}
 
 	for {
+		line++
 		record, err := r.reader.Read()
 		if err == io.EOF {
 			break
 		}
 
-		date, err := time.Parse(StdDate, record[0])
-		if err != nil {
-			log.Fatal(err)
+		if date, err = time.Parse(StdDate, record[0]); err != nil {
+			fatalf("Line %d, %s", line, err)
+		}
+
+		if postings, err = parsePostings2(root, record[2]); err != nil {
+			fatalf("Line %d, %s", line, err)
 		}
 
 		t := NewTransaction(
 			date,
 			strings.TrimSpace(record[1]),
-			parsePostings2(root, record[2]),
+			postings,
 			"",
 		)
 		trans = append(trans, t)
@@ -49,7 +59,7 @@ func (r CSVTxReader) Read(root *Account) []*Tx {
 
 var rePosting2 = regexp.MustCompile(`^(?P<account>.*?)\s{2,}(?P<comm1>[^-.0-9]*?)\s?(?P<amount>-?[.0-9]+)\s?(?P<comm2>[^-.0-9]*)$`)
 
-func parsePostings2(root *Account, p string) []Posting {
+func parsePostings2(root *Account, p string) ([]Posting, error) {
 	var comm string
 	postings := []Posting{}
 
@@ -58,7 +68,7 @@ func parsePostings2(root *Account, p string) []Posting {
 		match := rePosting2.FindStringSubmatch(posting)
 
 		if len(match) == 0 {
-			log.Fatalf("Invalid posting: %s", posting)
+			return nil, errors.New(fmt.Sprintf("Invalid posting: %s", posting))
 		}
 
 		result := make(map[string]string)
@@ -91,7 +101,7 @@ func parsePostings2(root *Account, p string) []Posting {
 		postings = append(postings, p)
 	}
 	//checkBalance(postings)
-	return postings
+	return postings, nil
 }
 
 func TxCSV(t *Tx) string {

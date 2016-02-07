@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -23,6 +24,11 @@ var (
 
 	devconfig = Config{inputFile: "test_data/clerk.dat"}
 )
+
+func fatalf(format string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, "ERROR: "+format+"\n", args...)
+	os.Exit(1)
+}
 
 func main() {
 	//var f *os.File
