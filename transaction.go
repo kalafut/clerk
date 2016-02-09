@@ -3,12 +3,17 @@ package main
 import (
 	"bytes"
 	"encoding/csv"
+	"fmt"
 	"time"
 )
 
 type Posting struct {
 	Acct *Account
 	Amt  Amount
+}
+
+func (p Posting) String() string {
+	return fmt.Sprintf("%s %v", p.Acct.Name, p.Amt)
 }
 
 // Transaction store all data for a transaction. It should be treated as immutable. Use Set*()
@@ -29,6 +34,18 @@ type TxWriter interface {
 }
 
 func NewTransaction(date time.Time, summary string, postings []Posting, note string) *Tx {
+	// First check whether postings are balanced. This will never be false if multiple
+	// commodities are involved since there are implicit conversions.
+	sum := Amount{}
+
+	for _, p := range postings {
+		sum.Add(p.Amt)
+	}
+
+	if len(sum) <= 1 && !sum.Zero() {
+		fatalf("Unbalanced postings: %v", postings)
+	}
+
 	t := Tx{
 		date:    date,
 		summary: summary,
@@ -177,19 +194,6 @@ func parsePostings(p string) []Posting {
 	return postings
 }
 */
-
-func checkBalance(postings []Posting) bool {
-	sum := Amount{}
-
-	for _, p := range postings {
-		sum.Add(p.Amt)
-	}
-
-	if !sum.Zero() {
-		// do something
-	}
-	return true
-}
 
 /*
 func (b Block) IsDupe(other Block, tolerance time.Duration) bool {

@@ -42,7 +42,7 @@ func (r CSVTxReader) Read(root *Account) []*Tx {
 			fatalf("Line %d, %s", line, err)
 		}
 
-		if postings, err = parsePostings2(root, record[2]); err != nil {
+		if postings, err = parsePostings(root, record[2]); err != nil {
 			fatalf("Line %d, %s", line, err)
 		}
 
@@ -60,7 +60,7 @@ func (r CSVTxReader) Read(root *Account) []*Tx {
 
 var rePosting2 = regexp.MustCompile(`^(?P<account>.*?)\s{2,}(?P<comm1>[^-.0-9]*?)\s?(?P<amount>-?[.0-9]+)\s?(?P<comm2>[^-.0-9]*)$`)
 
-func parsePostings2(root *Account, p string) ([]Posting, error) {
+func parsePostings(root *Account, p string) ([]Posting, error) {
 	var comm string
 	postings := []Posting{}
 

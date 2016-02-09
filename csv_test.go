@@ -12,7 +12,7 @@ import (
 const test1 = `
 
 2015/12/31, Payee or summary , A:B:C:D  $200 & Income  $-200, This is my New Years Eve??
-2015/12/31, Payee or summary , Income  $-1351.32 & Assets:Bank:Chase Checking  $-1351.32, This is my New Years Eve??
+2015/12/31, Payee or summary , Income  $-1351.32 & Assets:Bank:Chase Checking  $1351.32, This is my New Years Eve??
 2016/01/16, Stock purchase,   ETrade  -351.32 & ETrade  34 AAPL  &  ETrade  $151.33  ,
 `
 
