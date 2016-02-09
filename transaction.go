@@ -3,10 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/csv"
-	"io"
-	"log"
-	"math/big"
-	"strings"
 	"time"
 )
 
@@ -108,33 +104,34 @@ func (t Tx) toCSV() string {
 //	return true
 //}
 
-func ParseTransactions(in io.Reader) []*Tx {
-	trans := []*Tx{}
-	r := csv.NewReader(in)
+//func ParseTransactions(in io.Reader) []*Tx {
+//	trans := []*Tx{}
+//	r := csv.NewReader(in)
+//
+//	for {
+//		record, err := r.Read()
+//		if err == io.EOF {
+//			break
+//		}
+//
+//		date, err := time.Parse(StdDate, record[0])
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//
+//		t := NewTransaction(
+//			date,
+//			strings.TrimSpace(record[1]),
+//			parsePostings(record[2]),
+//			"",
+//		)
+//		trans = append(trans, t)
+//	}
+//
+//	return trans
+//}
 
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-
-		date, err := time.Parse(StdDate, record[0])
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		t := NewTransaction(
-			date,
-			strings.TrimSpace(record[1]),
-			parsePostings(record[2]),
-			"",
-		)
-		trans = append(trans, t)
-	}
-
-	return trans
-}
-
+/*
 func parsePostings(p string) []Posting {
 	var comm string
 	postings := []Posting{}
@@ -179,6 +176,7 @@ func parsePostings(p string) []Posting {
 	checkBalance(postings)
 	return postings
 }
+*/
 
 func checkBalance(postings []Posting) bool {
 	sum := Amount{}
