@@ -25,6 +25,16 @@ func (a Account) Children() map[string]*Account {
 	return a.children
 }
 
+func (a Account) Root() *Account {
+	root := &a
+
+	for root.Parent() != nil {
+		root = root.Parent()
+	}
+
+	return root
+}
+
 func (acct Account) allSorted() []string {
 	childAccts := make([]string, 0, len(acct.children))
 	for a := range acct.children {

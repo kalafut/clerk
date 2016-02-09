@@ -23,6 +23,7 @@ func NewCSVTxReader(r io.Reader) CSVTxReader {
 	}
 }
 
+// Read parses CSV transactions and returns a slice of pointers to Tx.
 func (r CSVTxReader) Read(root *Account) []*Tx {
 	var line int
 	var postings []Posting
