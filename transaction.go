@@ -190,3 +190,47 @@ func checkBalance(postings []Posting) bool {
 	}
 	return true
 }
+
+/*
+func (b Block) IsDupe(other Block, tolerance time.Duration) bool {
+	// Check time
+	timeDiff := b.date.Sub(other.date)
+	if timeDiff < 0 {
+		timeDiff = -timeDiff
+	}
+
+	if timeDiff > tolerance {
+		return false
+	}
+
+	// Check affected accounts
+	accts := b.Accounts()
+	acctsOther := other.Accounts()
+
+	if len(accts) != len(acctsOther) {
+		return false
+	}
+
+	for i := range accts {
+		if accts[i] != acctsOther[i] {
+			return false
+		}
+	}
+
+	// Check affected accounts
+	amts := b.Amounts()
+	amtsOther := other.Amounts()
+
+	if len(amts) != len(amtsOther) {
+		return false
+	}
+
+	for i := range amts {
+		if amts[i] != amtsOther[i] {
+			return false
+		}
+	}
+
+	return true
+}
+*/
