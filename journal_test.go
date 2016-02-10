@@ -14,12 +14,12 @@ var (
 	t4 = NewTransaction(time.Unix(300, 0), "YYY", []Posting{}, "")
 )
 
-func TestLedgerAdd(test *testing.T) {
+func TestJournalAdd(test *testing.T) {
 	var all []*Tx
 
 	is := is.New(test)
 
-	ldg := NewLedger()
+	ldg := NewJournal()
 	all = ldg.All()
 	is.Equal(0, len(all))
 
@@ -42,12 +42,12 @@ func TestLedgerAdd(test *testing.T) {
 	is.Equal(all[2], t1)
 }
 
-func TestLedgerDel(test *testing.T) {
+func TestJournalDel(test *testing.T) {
 	var all []*Tx
 
 	is := is.New(test)
 
-	ldg := NewLedger()
+	ldg := NewJournal()
 
 	ldg.Add(t1)
 	ldg.Add(t2)
@@ -72,11 +72,11 @@ func TestLedgerDel(test *testing.T) {
 	is.Equal(0, len(all))
 }
 
-func TestLedgerReplace(test *testing.T) {
+func TestJournalReplace(test *testing.T) {
 	var all []*Tx
 	is := is.New(test)
 
-	ldg := NewLedger()
+	ldg := NewJournal()
 
 	ldg.Add(t1)
 	ldg.Add(t2)

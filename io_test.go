@@ -17,7 +17,7 @@ func TestImportExport(test *testing.T) {
 		log.Fatal(err)
 	}
 
-	ledger := NewLedger()
+	ledger := NewJournal()
 
 	ledger.Export(os.Stdout)
 
