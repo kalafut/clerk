@@ -1,10 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"io"
-	"sort"
-)
+import "sort"
 
 // Journal is the highest level container, containing transactions and all related
 // accounts and commodities.
@@ -36,10 +32,8 @@ func (jrnl *Journal) Load(r TxReader) {
 	jrnl.sort()
 }
 
-func (jrnl Journal) Export(w io.Writer) {
-	for _, t := range jrnl.txs {
-		fmt.Fprint(w, t.toCSV())
-	}
+func (jrnl Journal) Store(w TxWriter) {
+	w.Write(jrnl.txs)
 }
 
 func (jrnl *Journal) Add(t *Tx) {

@@ -28,3 +28,4 @@ master.dat
 .DS_Store
 # clerk
 clerk
+coverage.out

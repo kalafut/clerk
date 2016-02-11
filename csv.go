@@ -17,9 +17,19 @@ type CSVTxReader struct {
 	reader *csv.Reader
 }
 
+type CSVTxWriter struct {
+	writer *csv.Writer
+}
+
 func NewCSVTxReader(r io.Reader) CSVTxReader {
 	return CSVTxReader{
 		reader: csv.NewReader(r),
+	}
+}
+
+func NewCSVTxWriter(w io.Writer) CSVTxWriter {
+	return CSVTxWriter{
+		writer: csv.NewWriter(w),
 	}
 }
 
@@ -50,7 +60,7 @@ func (r CSVTxReader) Read(root *Account) []*Tx {
 			date,
 			strings.TrimSpace(record[1]),
 			postings,
-			"",
+			strings.TrimSpace(record[3]),
 		)
 		trans = append(trans, t)
 	}
@@ -105,27 +115,29 @@ func parsePostings(root *Account, p string) ([]Posting, error) {
 	return postings, nil
 }
 
-func TxCSV(t *Tx) string {
-	var buf bytes.Buffer
-	var postings bytes.Buffer
+func (w CSVTxWriter) Write(txs []*Tx) {
+	for _, t := range txs {
+		var postings bytes.Buffer
 
-	for _, p := range t.postings {
-		postings.WriteString(p.Acct.Name)
-		postings.WriteString("  &  ")
+		for i, p := range t.postings {
+			postings.WriteString(fmt.Sprintf("%v  %v", p.Acct.Name, p.Amt))
+
+			if i < len(t.postings)-1 {
+				postings.WriteString(" & ")
+			}
+		}
+
+		record := []string{
+			t.date.Format(StdDate),
+			t.summary,
+			postings.String(),
+			t.note,
+		}
+
+		w.writer.Write(record)
 	}
 
-	w := csv.NewWriter(&buf)
-	record := []string{
-		t.date.Format(StdDate),
-		t.summary,
-		postings.String(),
-		t.note,
-	}
-
-	w.Write(record)
-	w.Flush()
-
-	return buf.String()
+	w.writer.Flush()
 }
 
 /*

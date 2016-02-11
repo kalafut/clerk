@@ -1,20 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"encoding/csv"
 	"fmt"
 	"time"
 )
-
-type Posting struct {
-	Acct *Account
-	Amt  Amount
-}
-
-func (p Posting) String() string {
-	return fmt.Sprintf("%s %v", p.Acct.Name, p.Amt)
-}
 
 // Transaction store all data for a transaction. It should be treated as immutable. Use Set*()
 // function to receive a new, modified Transaction.
@@ -25,12 +14,22 @@ type Tx struct {
 	note     string
 }
 
+// TxReader is the common interface for creating Tx objects from a persistent store.
 type TxReader interface {
 	Read(root *Account) []*Tx
 }
 
 type TxWriter interface {
 	Write([]*Tx)
+}
+
+type Posting struct {
+	Acct *Account
+	Amt  Amount
+}
+
+func (p Posting) String() string {
+	return fmt.Sprintf("%s %v", p.Acct.Name, p.Amt)
 }
 
 func NewTransaction(date time.Time, summary string, postings []Posting, note string) *Tx {
@@ -81,29 +80,6 @@ func (t Tx) SetPostings(postings []Posting) *Tx {
 }
 func (t Tx) SetNote(note string) *Tx {
 	return NewTransaction(t.date, t.summary, t.postings, note)
-}
-
-func (t Tx) toCSV() string {
-	var buf bytes.Buffer
-	var postings bytes.Buffer
-
-	for _, p := range t.postings {
-		postings.WriteString(p.Acct.Name)
-		postings.WriteString("  &  ")
-	}
-
-	w := csv.NewWriter(&buf)
-	record := []string{
-		t.date.Format(StdDate),
-		t.summary,
-		postings.String(),
-		t.note,
-	}
-
-	w.Write(record)
-	w.Flush()
-
-	return buf.String()
 }
 
 // Equal tests whether two transactions are equal according to the given

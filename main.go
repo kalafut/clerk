@@ -7,10 +7,6 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-//type ynabRow struct {
-
-//"Account","Flag","Check Number","Date","Payee","Category","Master Category","Sub Category","Memo","Outflow","Inflow","Cleared","Running Balance"
-
 var (
 	app = kingpin.New("clerk", "clerk Helper")
 	//ledgerFile = app.Flag("filename", "clerk filename").Short('f').Default("master.dat").String()
@@ -20,7 +16,8 @@ var (
 	//sortCmd    = app.Command("sort", "Sort the ledger by date.")
 	//dedupeCmd  = app.Command("dedupe", "Deduplicate the ledger.")
 	//importCmd  = app.Command("import", "Import from external sources.")
-	balanceCmd = app.Command("balance", "Show ledger balance.")
+	balanceCmd = app.Command("balance", "Show journal balance.")
+	formatCmd  = app.Command("format", "Format the journal")
 
 	devconfig = Config{inputFile: "test_data/clerk.dat"}
 )
@@ -61,6 +58,8 @@ func main() {
 	switch cmd {
 	case balanceCmd.FullCommand():
 		BalanceCmd(devconfig)
+	case formatCmd.FullCommand():
+		FormatCmd(devconfig)
 	}
 
 	//if *inplace {

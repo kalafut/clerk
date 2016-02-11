@@ -66,7 +66,11 @@ func (amt Amount) String() string {
 		fmt.Fprint(&b, v)
 	}
 
-	return fmt.Sprintf("(%s)", b.String())
+	if len(s) > 1 {
+		return fmt.Sprintf("(%s)", b.String())
+	} else {
+		return b.String()
+	}
 }
 
 func (amt Amount) Strings() map[string]string {
