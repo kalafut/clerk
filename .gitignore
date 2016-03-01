@@ -29,3 +29,4 @@ master.dat
 # clerk
 clerk
 coverage.out
+scala/target/
