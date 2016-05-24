@@ -1,4 +1,6 @@
+import collections
 import re
+
 from datetime import datetime
 
 """
@@ -30,8 +32,8 @@ BLANK_CHARS = " \t"
 
 reBlank = re.compile(r'^\s*$')
 reComment = re.compile(r'^[;#|\*%].*$')
-reSummary = re.compile(r'^(?P<date>\d{4}/\d\d/\d\d)(?: +(?P<cleared>[!\*]))?(?: +\((?P<code>.*?)\))? +.*$')
-rePosting = re.compile(r'^\s+[^;#|\*%].*$')
+reSummary = re.compile(r'^(?P<date>\d{4}/\d\d/\d\d)(?: +(?P<cleared>[!\*]))?(?: +\((?P<code>.*?)\))? +(?P<summary>.*?) *$')
+rePosting = re.compile(r'^\s+(?P<account>[^;#|\*%].*?)\s+(?P<amount>.*)$')
 reTxnComment = re.compile(r'^\s+[;#|\*%].*$')
 
 """
@@ -47,12 +49,16 @@ Textually, a block is defined as:
 Whitespace between blocks is ignored.
 """
 
+Posting = collections.namedtuple("Posting", "account amount")
+
 class Block:
     def __init__(self):
         self.lines = []
+        self.postings = []
         self.date = datetime.now()
         self.valid = False
-        self.complete = False
+        self.summary = ""
+        self.cleared = None
 
     def __repr__(self):
         return repr(self.lines)
@@ -65,17 +71,26 @@ def st_before_block(line, block):
         return None, st_before_block
 
     if reSummary.match(line):
+        match = reSummary.match(line)
         block = Block()
+        matches = match.groupdict()
+        block.date = datetime.strptime(matches["date"], "%Y/%m/%d").date()
+        block.cleared = matches["cleared"]
+        block.summary = matches["summary"]
         block.lines.append(line)
+
         return block, st_in_block
 
     raise Exception(line)
-
 
 def st_in_block(line, block):
     assert block is not None
 
     if rePosting.match(line):
+        match = rePosting.match(line)
+        posting = match.groupdict()
+        block.postings.append(Posting(posting["account"], posting["amount"]))
+
         block.lines.append(line)
         return block, st_in_block
 
@@ -83,7 +98,6 @@ def st_in_block(line, block):
         return block, st_in_block
 
     if reBlank.match(line):
-        block.complete = True
         return None, st_before_block
 
     raise Exception(line)
@@ -103,11 +117,11 @@ def parse(f):
 
     return blocks
 
-with open("sample.dat") as f:
-    blocks = parse(f)
-    print blocks
-
-exit()
+#with open("sample.dat") as f:
+#    blocks = parse(f)
+#    print blocks
+#
+#exit()
 
 """
 	BeforeBlock
