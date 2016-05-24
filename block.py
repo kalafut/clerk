@@ -52,17 +52,69 @@ class Block:
         self.lines = []
         self.date = datetime.now()
         self.valid = False
+        self.complete = False
+
+    def __repr__(self):
+        return repr(self.lines)
+
+
+def st_before_block(line, block):
+    assert block is None
+
+    if reBlank.match(line) or reComment.match(line):
+        return None, st_before_block
+
+    if reSummary.match(line):
+        block = Block()
+        block.lines.append(line)
+        return block, st_in_block
+
+    raise Exception(line)
+
+
+def st_in_block(line, block):
+    assert block is not None
+
+    if rePosting.match(line):
+        block.lines.append(line)
+        return block, st_in_block
+
+    if reComment.match(line):
+        return block, st_in_block
+
+    if reBlank.match(line):
+        block.complete = True
+        return None, st_before_block
+
+    raise Exception(line)
+
 
 def parse(f):
-    lines = []
+    blocks = []
+    state = st_before_block
 
+    block = None
     for line in f:
-        print line
+        next_block, state = state(line.rstrip(), block)
+        if block is not next_block:
+            block = next_block
+            if next_block is not None:
+                blocks.append(block)
 
-with open("README.md") as f:
-    parse(f)
+    return blocks
 
+with open("sample.dat") as f:
+    blocks = parse(f)
+    print blocks
 
+exit()
+
+"""
+	BeforeBlock
+	LeadingComments
+	Summary
+	Postings
+        """
 r"""
 
 // Note: values will not have '-', intentionally
