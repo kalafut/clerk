@@ -20,10 +20,9 @@ def test_parse():
     assert blocks[1].date == date(2007, 1, 1)
     assert blocks[0].summary == "McDonald's"
     assert blocks[1].summary == "Burger King"
-    assert blocks[0].cleared == None
+    assert blocks[0].cleared is None
     assert blocks[1].cleared == "*"
     assert blocks[0].postings[0].account == "Expenses:Dining"
     assert blocks[0].postings[0].amount == "$5.36"
-    #assert blocks[0].postings[1].account == "Assets:Checking"
-    #assert blocks[0].postings[1].amount == ""
-
+    assert blocks[0].postings[1].account == "Assets:Checking"
+    assert blocks[0].postings[1].amount is None

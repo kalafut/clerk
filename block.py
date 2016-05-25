@@ -33,7 +33,7 @@ BLANK_CHARS = " \t"
 reBlank = re.compile(r'^\s*$')
 reComment = re.compile(r'^[;#|\*%].*$')
 reSummary = re.compile(r'^(?P<date>\d{4}/\d\d/\d\d)(?: +(?P<cleared>[!\*]))?(?: +\((?P<code>.*?)\))? +(?P<summary>.*?) *$')
-rePosting = re.compile(r'^\s+(?P<account>[^;#|\*%].*?)\s+(?P<amount>.*)$')
+rePosting = re.compile(r'^\s+(?P<account>[^;#|\*%].*?)(?:\s{2,}(?P<amount>.*))?$')
 reTxnComment = re.compile(r'^\s+[;#|\*%].*$')
 
 """
