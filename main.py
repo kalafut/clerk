@@ -1,35 +1,54 @@
-import block
-import importer
+import glob
+import sys
+import click
 import Levenshtein
-
+import importer
+import txn
 
 def match(query, pool):
+    query = query.lower()
     best_score = -1
-    best_block = None
+    best_txn = None
     for block in pool:
-        #print query, block.summary
-        score = Levenshtein.ratio(query, block.summary)
+        score = Levenshtein.ratio(query, block.summary.lower())
         if score > best_score:
-            best_block = block
+            best_txn = block
             best_score = score
-            if "22478" in query:
-                pass
-                #print score
 
-    return best_block, best_score
+    return best_txn, best_score
 
 
-with open("chase_freedom.ldg") as f:
-    pool = block.parse(f)
+def test(import_file):
+    ldg_files = glob.glob("*.ldg")
+    corpus = []
+    for file_ in ldg_files:
+        with open(file_) as f:
+            corpus.extend(txn.parse(f))
 
-with open("chase_sapphire.ldg") as f:
-    pool2 = block.parse(f)
-
-pool = pool2
-
-with open("activity.csv") as f:
-    for query in importer.import_csv(f):
-        block, score = match(query.summary, pool)
-        print query.summary
-        print block, score
+    for query in importer.import_csv(import_file):
+        ablock, score = match(query.summary, corpus)
+        print query.date, query.summary
+        print ablock, score
         print
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+@click.argument('target', type=click.File('r'))
+def format(target):
+    for t in txn.parse(target):
+        t.write(sys.stdout)
+
+
+@cli.command(name="import")
+@click.argument('import_file', type=click.File('r'), default='-')
+@click.option('--target')
+def import_(import_file, target):
+    test(import_file)
+
+if __name__ == "__main__":
+    cli()

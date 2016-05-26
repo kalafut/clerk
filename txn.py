@@ -60,6 +60,12 @@ class Block:
         self.summary = ""
         self.cleared = None
 
+    def write(self, output):
+        output.write("{}   {}\n".format(self.date, self.summary))
+        for posting in self.postings:
+            output.writelines("   {:<50}   {}".format(posting.account, posting.amount or "").rstrip() + "\n")
+        output.write("\n")
+
     def __repr__(self):
         return repr(self.lines)
 
