@@ -1,5 +1,5 @@
 from datetime import date
-import block
+import txn
 
 def test_parse():
     sample = """
@@ -13,7 +13,7 @@ def test_parse():
     Assets:Checking
     """
 
-    blocks = block.parse(sample.split("\n"))
+    blocks = txn.parse(sample.split("\n"))
 
     assert len(blocks) == 2
     assert blocks[0].date == date(2006, 10, 15)
@@ -26,3 +26,17 @@ def test_parse():
     assert blocks[0].postings[0].amount == "$5.36"
     assert blocks[0].postings[1].account == "Assets:Checking"
     assert blocks[0].postings[1].amount is None
+
+def test_parse2():
+	with open('./test_data/sample.ldg') as f:
+		blocks = txn.parse(f)
+	assert len(blocks) == 6
+
+	assert blocks[4].date == date(2004, 5, 27)
+	assert len(blocks[4].postings) == 4
+
+	b = blocks[5]
+	assert b.date == date(2004, 5, 27)
+	assert b.summary == 'Credit card company'
+	assert len(b.postings) == 2
+

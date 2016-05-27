@@ -33,7 +33,7 @@ BLANK_CHARS = " \t"
 reBlank = re.compile(r'^\s*$')
 reComment = re.compile(r'^[;#|\*%].*$')
 reSummary = re.compile(r'^(?P<date>\d{4}/\d\d/\d\d)(?: +(?P<cleared>[!\*]))?(?: +\((?P<code>.*?)\))? +(?P<summary>.*?) *$')
-rePosting = re.compile(r'^\s+(?P<account>[^;#|\*%].*?)(?:\s{2,}(?P<amount>.*))?$')
+rePosting = re.compile(r'^\s+(?P<account>[^;#|\*% ].*?)(?:\s{2,}(?P<amount>.*))?$')
 reTxnComment = re.compile(r'^\s+[;#|\*%].*$')
 
 """
@@ -93,21 +93,20 @@ def st_in_block(line, block):
     assert block is not None
 
     if rePosting.match(line):
+        print line
         match = rePosting.match(line)
         posting = match.groupdict()
         block.postings.append(Posting(posting["account"], posting["amount"]))
-
         block.lines.append(line)
         return block, st_in_block
 
-    if reComment.match(line):
+    if reTxnComment.match(line):
         return block, st_in_block
 
     if reBlank.match(line):
         return None, st_before_block
 
     raise Exception(line)
-
 
 def parse(f):
     blocks = []
