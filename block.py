@@ -66,11 +66,9 @@ class Block:
             output.writelines("   {:<50}   {}".format(posting.account, posting.amount or "").rstrip() + "\n")
         output.write("\n")
 
-    @property
     def is_transaction(self):
         return len(self.postings) > 0
 
-    @property
     def is_empty(self):
         for line in self.lines:
             if len(line.rstrip()) > 0:
@@ -127,13 +125,13 @@ def parse(f):
     for line in f:
         next_block, state = state(line.rstrip(), block)
         if next_block is not block:
-            if block.is_empty:
+            if block.is_empty():
                 blocks[-1] = next_block
             else:
                 blocks.append(next_block)
             block = next_block
 
-    if blocks[-1].is_empty:
+    if blocks[-1].is_empty():
         blocks = blocks[0:-1]
 
     return blocks
