@@ -61,10 +61,14 @@ class Block:
         self.cleared = None
 
     def write(self, output):
-        output.write("{}   {}\n".format(self.date, self.summary))
-        for posting in self.postings:
-            output.writelines("   {:<50}   {}".format(posting.account, posting.amount or "").rstrip() + "\n")
-        output.write("\n")
+        if not self.is_transaction():
+            for line in self.lines:
+                output.write(line + '\n')
+        else:
+            output.write("{}   {}\n".format(self.date, self.summary))
+            for posting in self.postings:
+                output.writelines("   {:<50}   {}".format(posting.account, posting.amount or "").rstrip() + "\n")
+            output.write("\n")
 
     def is_transaction(self):
         return len(self.postings) > 0

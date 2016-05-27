@@ -31,11 +31,16 @@ def test(import_file):
         print ablock, score
         print
 
-
 @click.group()
 def cli():
     pass
 
+@cli.command()
+@click.argument('target', type=click.File('r'), default='-')
+def format(target):
+    blocks = block.parse(target)
+    for b in blocks:
+        b.write(sys.stdout)
 
 @cli.command()
 @click.argument('target', type=click.File('r'))
@@ -43,12 +48,14 @@ def format(target):
     for t in block.parse(target):
         t.write(sys.stdout)
 
-
 @cli.command(name="import")
 @click.argument('import_file', type=click.File('r'), default='-')
 @click.option('--target')
 def import_(import_file, target):
     test(import_file)
+
+
+
 
 if __name__ == "__main__":
     cli()
