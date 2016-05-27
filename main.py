@@ -3,19 +3,19 @@ import sys
 import click
 import Levenshtein
 import importer
-import txn
+import block
 
 def match(query, pool):
     query = query.lower()
     best_score = -1
-    best_txn = None
+    best_block = None
     for block in pool:
         score = Levenshtein.ratio(query, block.summary.lower())
         if score > best_score:
-            best_txn = block
+            best_block = block
             best_score = score
 
-    return best_txn, best_score
+    return best_block, best_score
 
 
 def test(import_file):
@@ -23,7 +23,7 @@ def test(import_file):
     corpus = []
     for file_ in ldg_files:
         with open(file_) as f:
-            corpus.extend(txn.parse(f))
+            corpus.extend(block.parse(f))
 
     for query in importer.import_csv(import_file):
         ablock, score = match(query.summary, corpus)
@@ -40,7 +40,7 @@ def cli():
 @cli.command()
 @click.argument('target', type=click.File('r'))
 def format(target):
-    for t in txn.parse(target):
+    for t in block.parse(target):
         t.write(sys.stdout)
 
 

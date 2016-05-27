@@ -1,5 +1,8 @@
 from datetime import date
-import txn
+
+import block
+import pytest
+
 
 def test_parse():
     sample = """
@@ -11,11 +14,18 @@ def test_parse():
 2007/01/01 * Burger King
     Expenses:Dining   $5.36
     Assets:Checking
+
+Extra
+
+Stuff
+
+
     """
 
-    blocks = txn.parse(sample.split("\n"))
+    blocks = block.parse(sample.split("\n"))
 
-    assert len(blocks) == 2
+    assert len(blocks) == 3
+    assert blocks[0].is_transaction
     assert blocks[0].date == date(2006, 10, 15)
     assert blocks[1].date == date(2007, 1, 1)
     assert blocks[0].summary == "McDonald's"
@@ -26,17 +36,19 @@ def test_parse():
     assert blocks[0].postings[0].amount == "$5.36"
     assert blocks[0].postings[1].account == "Assets:Checking"
     assert blocks[0].postings[1].amount is None
+    assert len(blocks[2].lines) == 6
 
+@pytest.mark.skip()
 def test_parse2():
-	with open('./test_data/sample.ldg') as f:
-		blocks = txn.parse(f)
-	assert len(blocks) == 6
+        with open('./test_data/sample.ldg') as f:
+            blocks = block.parse(f)
+        assert len(blocks) == 6
 
-	assert blocks[4].date == date(2004, 5, 27)
-	assert len(blocks[4].postings) == 4
+        assert blocks[4].date == date(2004, 5, 27)
+        assert len(blocks[4].postings) == 4
 
-	b = blocks[5]
-	assert b.date == date(2004, 5, 27)
-	assert b.summary == 'Credit card company'
-	assert len(b.postings) == 2
+        b = blocks[5]
+        assert b.date == date(2004, 5, 27)
+        assert b.summary == 'Credit card company'
+        assert len(b.postings) == 2
 

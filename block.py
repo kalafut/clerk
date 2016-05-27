@@ -66,16 +66,22 @@ class Block:
             output.writelines("   {:<50}   {}".format(posting.account, posting.amount or "").rstrip() + "\n")
         output.write("\n")
 
+    @property
+    def is_transaction(self):
+        return len(self.postings) > 0
+
+    @property
+    def is_empty(self):
+        for line in self.lines:
+            if len(line.rstrip()) > 0:
+                return False
+        return True
+
     def __repr__(self):
         return repr(self.lines)
 
 
-def st_before_block(line, block):
-    assert block is None
-
-    if reBlank.match(line) or reComment.match(line):
-        return None, st_before_block
-
+def st_raw(line, block):
     if reSummary.match(line):
         match = reSummary.match(line)
         block = Block()
@@ -85,48 +91,53 @@ def st_before_block(line, block):
         block.summary = matches["summary"]
         block.lines.append(line)
 
-        return block, st_in_block
+        return block, st_in_txn
 
-    raise Exception(line)
+    if line.startswith(' ') and len(line.rstrip() > 0):
+        raise Exception(line)
 
-def st_in_block(line, block):
+    block.lines.append(line)
+    return block, st_raw
+
+
+def st_in_txn(line, block):
     assert block is not None
 
     if rePosting.match(line):
-        print line
         match = rePosting.match(line)
         posting = match.groupdict()
         block.postings.append(Posting(posting["account"], posting["amount"]))
         block.lines.append(line)
-        return block, st_in_block
+        return block, st_in_txn
 
     if reTxnComment.match(line):
-        return block, st_in_block
+        return block, st_in_txn
 
     if reBlank.match(line):
-        return None, st_before_block
+        return Block(), st_raw
 
     raise Exception(line)
 
-def parse(f):
-    blocks = []
-    state = st_before_block
 
-    block = None
+def parse(f):
+    state = st_raw
+
+    block = Block()
+    blocks = [block]
     for line in f:
         next_block, state = state(line.rstrip(), block)
-        if block is not next_block:
+        if next_block is not block:
+            if block.is_empty:
+                blocks[-1] = next_block
+            else:
+                blocks.append(next_block)
             block = next_block
-            if next_block is not None:
-                blocks.append(block)
+
+    if blocks[-1].is_empty:
+        blocks = blocks[0:-1]
 
     return blocks
 
-#with open("sample.dat") as f:
-#    blocks = parse(f)
-#    print blocks
-#
-#exit()
 
 """
 	BeforeBlock
