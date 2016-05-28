@@ -32,7 +32,7 @@ BLANK_CHARS = " \t"
 
 reBlank = re.compile(r'^\s*$')
 reComment = re.compile(r'^[;#|\*%].*$')
-reSummary = re.compile(r'^(?P<date>\d{4}/\d\d/\d\d)(?: +(?P<cleared>[!\*]))?(?: +\((?P<code>.*?)\))? +(?P<summary>.*?) *$')
+reSummary = re.compile(r'^(?P<date>\d{4}/\d\d/\d\d)(?: +(?P<cleared>[!\*]))?(?: +\((?P<code>.*?)\))? *(?:(?P<summary>.*?))? *$')
 rePosting = re.compile(r'^\s+(?P<account>[^;#|\*% ].*?)(?:\s{2,}(?P<amount>.*))?$')
 reTxnComment = re.compile(r'^\s+[;#|\*%].*$')
 
@@ -65,7 +65,7 @@ class Block:
             for line in self.lines:
                 output.write(line + '\n')
         else:
-            output.write("{}   {}\n".format(self.date, self.summary))
+            output.write("{} {} {}\n".format(self.date, self.cleared or " ", self.summary))
             for posting in self.postings:
                 output.writelines("   {:<50}   {}".format(posting.account, posting.amount or "").rstrip() + "\n")
             output.write("\n")
@@ -95,7 +95,7 @@ def st_raw(line, block):
 
         return block, st_in_txn
 
-    if line.startswith(' ') and len(line.rstrip() > 0):
+    if line.startswith(' ') and len(line.rstrip()) > 0:
         raise Exception(line)
 
     block.lines.append(line)

@@ -42,6 +42,16 @@ def format(target):
     for b in blocks:
         b.write(sys.stdout)
 
+
+@cli.command()
+@click.argument('target', type=click.File('r'), default='-')
+def clear(target):
+    blocks = block.parse(target)
+    for b in blocks:
+        if b.is_transaction():
+            b.cleared = '*'
+        b.write(sys.stdout)
+
 @cli.command()
 @click.argument('target', type=click.File('r'))
 def format(target):

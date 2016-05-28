@@ -20,11 +20,15 @@ Extra
 Stuff
 
 
+
+2013/01/01
+    Bank        $10
+    Credit     -$10
     """
 
     blocks = block.parse(sample.split("\n"))
 
-    assert len(blocks) == 3
+    assert len(blocks) == 4
     assert blocks[0].is_transaction
     assert blocks[0].date == date(2006, 10, 15)
     assert blocks[1].date == date(2007, 1, 1)
@@ -37,6 +41,10 @@ Stuff
     assert blocks[0].postings[1].account == "Assets:Checking"
     assert blocks[0].postings[1].amount is None
     assert len(blocks[2].lines) == 6
+
+    assert blocks[3].summary == ""
+    assert blocks[3].postings[0].account == "Bank"
+    assert blocks[3].postings[1].amount == "-$10"
 
 @pytest.mark.skip()
 def test_parse2():
