@@ -30,3 +30,4 @@ master.dat
 clerk
 coverage.out
 *.pyc
+clerk.egg-info/
