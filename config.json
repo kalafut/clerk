@@ -1,0 +1,17 @@
+{
+    "import": {
+        "sources": {
+            "chase_checking": {
+                "format": "csv",
+                "date_format": "M/D/Y",
+                "columns": {
+                    "type": null,
+                    "transaction_date": "Trans Date",
+                    "posting_date": "Post Date",
+                    "description": "Description",
+                    "amount": "Amount"
+                }
+            }
+        }
+    }
+}
