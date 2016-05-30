@@ -65,6 +65,11 @@ def import_(import_file, target):
     test(import_file)
 
 
+@cli.command()
+@click.argument('archive')
+@click.argument('input', type=click.File('r'), default='-')
+def save(archive, input):
+    importer.save(archive, input)
 
 
 if __name__ == "__main__":
